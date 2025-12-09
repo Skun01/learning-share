@@ -19,8 +19,11 @@ public class UserCardProgressConfiguration : IEntityTypeConfiguration<UserCardPr
             .HasDefaultValue(SRSLevel.New)
             .HasConversion<int>();
         
-        builder.Property(x => x.GhostLevel).HasDefaultValue(0);
-        builder.Property(x => x.Streak).HasDefaultValue(0);
+        builder.Property(x => x.GhostLevel)
+            .HasDefaultValue(0);
+
+        builder.Property(x => x.Streak)
+            .HasDefaultValue(0);
 
         builder.HasOne(x => x.User)
             .WithMany(u => u.Progresses)
