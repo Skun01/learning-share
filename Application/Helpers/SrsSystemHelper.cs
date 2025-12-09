@@ -1,6 +1,6 @@
 using Domain.Enums;
 
-namespace Application.Common.Helpers;
+namespace Application.Helpers;
 
 public static class SrsSystemHelper
 {
