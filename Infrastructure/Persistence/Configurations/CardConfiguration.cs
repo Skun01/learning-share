@@ -23,6 +23,12 @@ public class CardConfiguration : IEntityTypeConfiguration<Card>
             .HasMaxLength(500)
             .IsRequired();
 
+        builder.Property(c => c.Synonyms)
+            .HasMaxLength(500);
+
+        builder.Property(c => c.ImageUrl)
+            .HasMaxLength(500);
+
         // Quan hệ với Deck
         builder.HasOne(c => c.Deck)
             .WithMany(d => d.Cards)

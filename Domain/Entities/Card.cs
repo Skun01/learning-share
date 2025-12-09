@@ -9,6 +9,8 @@ public class Card : BaseEntity
     public CardType Type { get; set; }
     public string Term { get; set; } = string.Empty; // Từ vựng / Cấu trúc
     public string Meaning { get; set; } = string.Empty; // Nghĩa
+    public string? Synonyms { get; set; }
+    public string? ImageUrl { get; set; }
     public string? Note { get; set; }
 
     public Deck Deck { get; set; } = null!;
