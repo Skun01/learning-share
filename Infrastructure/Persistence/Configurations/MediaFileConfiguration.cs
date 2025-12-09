@@ -11,9 +11,17 @@ public class MediaFileConfiguration : IEntityTypeConfiguration<MediaFile>
         builder.ToTable("MediaFiles");
         builder.HasKey(f => f.Id);
 
-        builder.Property(f => f.FileName).HasMaxLength(255).IsRequired();
-        builder.Property(f => f.FilePath).HasMaxLength(500).IsRequired();
-        builder.Property(f => f.FileType).HasMaxLength(50).IsRequired();
+        builder.Property(f => f.FileName)
+            .HasMaxLength(255)
+            .IsRequired();
+
+        builder.Property(f => f.FilePath)
+            .HasMaxLength(500)
+            .IsRequired();
+
+        builder.Property(f => f.FileType)
+            .HasMaxLength(50)
+            .IsRequired();
 
         // Quan hệ với User
         builder.HasOne(f => f.User)

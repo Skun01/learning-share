@@ -12,11 +12,12 @@ public class UserCardProgressConfiguration : IEntityTypeConfiguration<UserCardPr
         builder.ToTable("UserCardProgress");
         builder.HasKey(x => x.Id);
 
-        builder.HasIndex(x => new { x.UserId, x.CardId }).IsUnique();
+        builder.HasIndex(x => new { x.UserId, x.CardId })
+            .IsUnique();
 
         builder.Property(x => x.SRSLevel)
-        .HasDefaultValue(SRSLevel.New)
-        .HasConversion<int>();
+            .HasDefaultValue(SRSLevel.New)
+            .HasConversion<int>();
         
         builder.Property(x => x.GhostLevel).HasDefaultValue(0);
         builder.Property(x => x.Streak).HasDefaultValue(0);
