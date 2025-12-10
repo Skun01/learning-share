@@ -11,6 +11,7 @@ builder.Host.UseSerilog((context, services, configuration) =>
         .Enrich.FromLogContext();
 });
 
+builder.Services.AddOptionSettings(builder.Configuration);
 builder.Services.AddControllers();
 builder.Services.AddSwaggerInfrastructure();
 builder.Services.AddInfrastructures(builder.Configuration);
