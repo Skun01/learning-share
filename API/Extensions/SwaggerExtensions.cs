@@ -26,13 +26,14 @@ public static class SwaggerExtensions
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
             options.IncludeXmlComments(xmlPath);
 
-            // Cấu hình bảo mật (JWT Bearer) - Chuẩn bị cho chức năng Login sau này
+            // Jwt
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
-                Description = "Nhập 'Bearer [your-token]' vào ô bên dưới",
+                Description = "Nhập Token",
                 Name = "Authorization",
-                Type = SecuritySchemeType.ApiKey,
+                Type = SecuritySchemeType.Http,
+                BearerFormat = "JWT",
                 Scheme = "Bearer"
             });
 

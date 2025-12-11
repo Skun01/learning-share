@@ -12,6 +12,8 @@ builder.Host.UseSerilog((context, services, configuration) =>
 });
 
 builder.Services.AddOptionSettings(builder.Configuration);
+
+builder.Services.AddAuthConfiguration(builder.Configuration);
 builder.Services.AddControllers();
 builder.Services.AddSwaggerInfrastructure();
 builder.Services.AddInfrastructures(builder.Configuration);
@@ -27,6 +29,9 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+app.UseAuthentication();
+app.UseAuthorization();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

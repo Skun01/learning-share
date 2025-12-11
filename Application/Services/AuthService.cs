@@ -1,4 +1,5 @@
 using Application.DTOs.Auth;
+using Application.DTOs.User;
 using Application.IRepositories;
 using Application.IServices;
 using Application.Mappings;
@@ -16,7 +17,22 @@ public class AuthService : IAuthService
         _unitOfWork = unitOfWork;
         _tokenService = tokenService;
     }
-    
+
+    public async Task<UserProfileDTO> GetProfileAsync(int userId)
+    {
+        var user = await _unitOfWork.Users.GetByIdAsync(userId);
+
+        if(user == null)
+            throw new ApplicationException(MessageConstant.CommonMessage.NOT_FOUND);
+
+        var settings = await _unitOfWork.UserSettings.GetByUserIdAsync(userId);
+
+        if(settings == null)
+            throw new ApplicationException(MessageConstant.CommonMessage.NOT_FOUND);
+
+        return user.ToProfileDTO(settings);
+    }
+
     public async Task<AuthDTO> LoginAsync(LoginRequest request)
     {
         var user = await _unitOfWork.Users.GetByEmailAsync(request.Email);

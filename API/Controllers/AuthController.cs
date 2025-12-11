@@ -1,6 +1,9 @@
+using System.Security.Claims;
 using Application.Common;
 using Application.DTOs.Auth;
+using Application.DTOs.User;
 using Application.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
@@ -37,6 +40,21 @@ public class AuthController : BaseController
     public async Task<ApiResponse<AuthDTO>> Register(RegisterRequest request)
     {
         var result = await HandleException(_service.RegisterAsync(request));
+
+        return result;
+    }
+
+    /// <summary>
+    /// Lấy thông tin tài khoản người dùng đang đăng nhập
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<ApiResponse<UserProfileDTO>> GetMe()
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var result = await HandleException(_service.GetProfileAsync(int.Parse(userIdString!)));
 
         return result;
     }
