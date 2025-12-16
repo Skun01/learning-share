@@ -3,10 +3,11 @@ using Application.IServices;
 using Application.Services;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories;
-using Infrastructure.Services;
+using Infrastructure.InternalServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Application.IServices.IInternal;
 
 namespace Infrastructure;
 
@@ -25,8 +26,12 @@ public static class DependencyInjection
         
         // services
         services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<ITokenService, TokenService>();
 
+        // internal services
+        services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IEmailSenderService, EmailSenderService>();
+        services.AddScoped<IEmailTemplateService, EmailTemplateService>();
+        
         return services;
     }
 }

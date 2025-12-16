@@ -24,7 +24,7 @@ public class AuthController : BaseController
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpPost("login")]
-    public async Task<ApiResponse<AuthDTO>> Login(LoginRequest request)
+    public async Task<ApiResponse<AuthDTO>> Login([FromBody] LoginRequest request)
     {
         var result = await HandleException(_service.LoginAsync(request));
 
@@ -37,9 +37,17 @@ public class AuthController : BaseController
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpPost("register")]
-    public async Task<ApiResponse<AuthDTO>> Register(RegisterRequest request)
+    public async Task<ApiResponse<AuthDTO>> Register([FromBody] RegisterRequest request)
     {
         var result = await HandleException(_service.RegisterAsync(request));
+
+        return result;
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<ApiResponse<bool>> SendResetEmail([FromBody] ForgotPasswordRequest request)
+    {
+        var result = await HandleException(_service.SendResetPasswordEmailAsync(request));
 
         return result;
     }

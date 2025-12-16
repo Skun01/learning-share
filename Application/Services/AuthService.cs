@@ -2,9 +2,12 @@ using Application.DTOs.Auth;
 using Application.DTOs.User;
 using Application.IRepositories;
 using Application.IServices;
+using Application.IServices.IInternal;
 using Application.Mappings;
+using Application.Settings;
 using Domain.Constants;
 using Domain.Entities;
+using Microsoft.Extensions.Options;
 
 namespace Application.Services;
 
@@ -12,10 +15,17 @@ public class AuthService : IAuthService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ITokenService _tokenService;
-    public AuthService(IUnitOfWork unitOfWork, ITokenService tokenService)
+    private readonly IEmailSenderService _emailService;
+    private readonly IEmailTemplateService _emailTemplateService;
+    private readonly AppSettings _appSettings;
+    public AuthService(IUnitOfWork unitOfWork, ITokenService tokenService, IEmailSenderService emailService,
+        IOptions<AppSettings> _settings, IEmailTemplateService emailTemplateService)
     {
         _unitOfWork = unitOfWork;
         _tokenService = tokenService;
+        _emailService = emailService;
+        _appSettings = _settings.Value;
+        _emailTemplateService = emailTemplateService;
     }
 
     public async Task<UserProfileDTO> GetProfileAsync(int userId)
@@ -43,7 +53,6 @@ public class AuthService : IAuthService
         return CreateAuthDTO(user);
     }
     
-
     public async Task<AuthDTO> RegisterAsync(RegisterRequest request)
     {
         var isEmailExist = await _unitOfWork.Users.AnyAsync(u => u.Email == request.Email);
@@ -65,6 +74,31 @@ public class AuthService : IAuthService
         await _unitOfWork.SaveChangesAsync();
 
         return CreateAuthDTO(newUser);
+    }
+
+    public async Task<bool> SendResetPasswordEmailAsync(ForgotPasswordRequest request)
+    {
+        var user = await _unitOfWork.Users.GetByEmailAsync(request.Email);
+
+        if(user != null)
+        {
+            user.PasswordResetToken = _tokenService.GenerateRandomToken();
+            user.PasswordResetTokenExpiry = DateTime.UtcNow.AddMinutes(15);
+
+            _unitOfWork.Users.UpdateAsync(user);
+            await _unitOfWork.SaveChangesAsync();
+            
+            string resetUrl = $"{_appSettings.ResetPasswordUrl}?token={user.PasswordResetToken}";
+            string emailTemplate = _emailTemplateService.GetPasswordResetTemplate(user.Username, resetUrl, 15);
+
+            await _emailService.SendEmailAsync(
+                user.Email,
+                EmailSubjectConstant.ResetPassword,
+                emailTemplate
+            );
+        }
+
+        return true;
     }
 
     private AuthDTO CreateAuthDTO(User user)

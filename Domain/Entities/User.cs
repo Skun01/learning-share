@@ -11,6 +11,8 @@ public class User : BaseEntity
     public UserRole Role { get; set; } = UserRole.Learner;
     public string? AvatarUrl { get; set; }
     public bool IsActive { get; set; } = true;
+    public string? PasswordResetToken { get; set; }
+    public DateTime? PasswordResetTokenExpiry { get; set; }
     
     public UserSettings? Settings { get; set; }
     public ICollection<Deck> Decks { get; set; } = [];
