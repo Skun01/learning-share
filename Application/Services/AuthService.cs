@@ -76,6 +76,26 @@ public class AuthService : IAuthService
         return CreateAuthDTO(newUser);
     }
 
+    public async Task<bool> ResetPasswordAsync(ResetPasswordRequest request)
+    {
+        var user = await _unitOfWork.Users.GetByPasswordResetTokenAsync(request.Token);
+
+        if(user == null)
+            throw new ApplicationException(MessageConstant.CommonMessage.NOT_FOUND);
+
+        if(user.PasswordResetTokenExpiry < DateTime.UtcNow)
+            throw new ApplicationException(MessageConstant.AuthMessage.RESET_PASSWORD_TOKEN_EXPIRED);
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+        user.PasswordResetToken = null;
+        user.PasswordResetTokenExpiry = null;
+
+        _unitOfWork.Users.UpdateAsync(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        return true;
+    }
+
     public async Task<bool> SendResetPasswordEmailAsync(ForgotPasswordRequest request)
     {
         var user = await _unitOfWork.Users.GetByEmailAsync(request.Email);

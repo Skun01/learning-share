@@ -15,6 +15,7 @@ public static class MessageConstant
 
     public static class AuthMessage
     {
-        public const string INVALID_LOGIN = "INVALID_400";
+        public const string INVALID_LOGIN = "INVALID_400";  // Tài khoản hoặc mật khẩu không đúng
+        public const string RESET_PASSWORD_TOKEN_EXPIRED = "RESET_PASSWORD_TOKEN_EXPIRED_400"; // reset password token hết hạn
     }
 }

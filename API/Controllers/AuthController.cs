@@ -44,10 +44,28 @@ public class AuthController : BaseController
         return result;
     }
 
+    /// <summary>
+    /// Gửi yêu cầu reset mật khẩu
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
     [HttpPost("forgot-password")]
     public async Task<ApiResponse<bool>> SendResetEmail([FromBody] ForgotPasswordRequest request)
     {
         var result = await HandleException(_service.SendResetPasswordEmailAsync(request));
+
+        return result;
+    }
+
+    /// <summary>
+    /// xử lý yêu cầu reset mật khẩu
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost("reset-password")]
+    public async Task<ApiResponse<bool>> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        var result = await HandleException(_service.ResetPasswordAsync(request));
 
         return result;
     }
