@@ -11,6 +11,7 @@ public static class MessageConstant
     public static class UserMessage
     {
         public const string EMAIL_ALREADY_EXISTS = "User_Email_409"; // email đã tồn tại
+        public const string USERNAME_ALREADY_EXISTSS = "Username_409"; // username đã tồn tại
     }
 
     public static class AuthMessage
