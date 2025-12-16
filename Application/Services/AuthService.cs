@@ -1,5 +1,4 @@
 using Application.DTOs.Auth;
-using Application.DTOs.User;
 using Application.IRepositories;
 using Application.IServices;
 using Application.IServices.IInternal;
@@ -26,21 +25,6 @@ public class AuthService : IAuthService
         _emailService = emailService;
         _appSettings = _settings.Value;
         _emailTemplateService = emailTemplateService;
-    }
-
-    public async Task<UserProfileDTO> GetProfileAsync(int userId)
-    {
-        var user = await _unitOfWork.Users.GetByIdAsync(userId);
-
-        if(user == null)
-            throw new ApplicationException(MessageConstant.CommonMessage.NOT_FOUND);
-
-        var settings = await _unitOfWork.UserSettings.GetByUserIdAsync(userId);
-
-        if(settings == null)
-            throw new ApplicationException(MessageConstant.CommonMessage.NOT_FOUND);
-
-        return user.ToProfileDTO(settings);
     }
 
     public async Task<AuthDTO> LoginAsync(LoginRequest request)

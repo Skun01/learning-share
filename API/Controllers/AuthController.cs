@@ -69,19 +69,4 @@ public class AuthController : BaseController
 
         return result;
     }
-
-    /// <summary>
-    /// Lấy thông tin tài khoản người dùng đang đăng nhập
-    /// </summary>
-    /// <returns></returns>
-    [HttpGet("me")]
-    [Authorize]
-    public async Task<ApiResponse<UserProfileDTO>> GetMe()
-    {
-        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        var result = await HandleException(_service.GetProfileAsync(int.Parse(userIdString!)));
-
-        return result;
-    }
 }

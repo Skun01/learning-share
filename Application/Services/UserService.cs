@@ -1,6 +1,7 @@
 using Application.DTOs.User;
 using Application.IRepositories;
 using Application.IServices;
+using Application.Mappings;
 using Domain.Constants;
 
 namespace Application.Services;
@@ -11,6 +12,21 @@ public class UserService : IUserService
     public UserService(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
+    }
+
+    public async Task<UserProfileDTO> GetProfileAsync(int userId)
+    {
+        var user = await _unitOfWork.Users.GetByIdAsync(userId);
+
+        if(user == null)
+            throw new ApplicationException(MessageConstant.CommonMessage.NOT_FOUND);
+
+        var settings = await _unitOfWork.UserSettings.GetByUserIdAsync(userId);
+
+        if(settings == null)
+            throw new ApplicationException(MessageConstant.CommonMessage.NOT_FOUND);
+
+        return user.ToProfileDTO(settings);
     }
 
     public async Task<bool> UpdateProfileAsync(int userId, UpdateProfileRequest request)
