@@ -45,4 +45,16 @@ public class UserController : BaseController
 
         return result;
     }
+
+    [HttpPost("avatar")]
+    [Authorize]
+    public async Task<ApiResponse<string>> UploadAvatar(IFormFile file)
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = int.Parse(userIdString!);
+
+        var result = await HandleException(_service.UploadAvatarAsync(userId, file));
+
+        return result;
+    }
 }

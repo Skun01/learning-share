@@ -97,7 +97,7 @@ public class AuthService : IAuthService
 
             await _emailService.SendEmailAsync(
                 user.Email,
-                EmailSubjectConstant.ResetPassword,
+                EmailSubjectConstant.RESET_PASSWORD,
                 emailTemplate
             );
         }

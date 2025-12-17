@@ -6,6 +6,7 @@ public static class MessageConstant
     {
         public const string INTERNAL_SERVER_ERROR = "Common_505";   // Lỗi Server
         public const string NOT_FOUND = "Common_404"; // không tìm thấy
+        public const string INVALID = "Common_400"; // không hợp lệ
     }
 
     public static class UserMessage
@@ -18,5 +19,11 @@ public static class MessageConstant
     {
         public const string INVALID_LOGIN = "INVALID_400";  // Tài khoản hoặc mật khẩu không đúng
         public const string RESET_PASSWORD_TOKEN_EXPIRED = "RESET_PASSWORD_TOKEN_EXPIRED_400"; // reset password token hết hạn
+    }
+
+    public static class FileUploadMessage
+    {
+        public const string INVALID_EXTENSION = "INVALID_EXTENSION_400";
+        public const string STORAGE_EXCEED = "STORAGE_EXCEED_400";
     }
 }
