@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using Application.Common;
 using Application.DTOs.User;
 using Application.IServices;
@@ -24,9 +23,9 @@ public class UserController : BaseController
     [Authorize]
     public async Task<ApiResponse<bool>> UpdateInfo([FromBody] UpdateProfileRequest request)
     {
-        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = GetCurrentUserId();
 
-        var result = await HandleException(_service.UpdateProfileAsync(int.Parse(userIdString!), request));
+        var result = await HandleException(_service.UpdateProfileAsync(userId, request));
 
         return result;
     }
@@ -39,21 +38,39 @@ public class UserController : BaseController
     [Authorize]
     public async Task<ApiResponse<UserProfileDTO>> GetMe()
     {
-        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = GetCurrentUserId();
 
-        var result = await HandleException(_service.GetProfileAsync(int.Parse(userIdString!)));
+        var result = await HandleException(_service.GetProfileAsync(userId));
 
         return result;
     }
 
+    /// <summary>
+    /// Thay đổi avatar tài khoản người dùng
+    /// </summary>
+    /// <param name="file"></param>
+    /// <returns></returns>
     [HttpPost("avatar")]
     [Authorize]
     public async Task<ApiResponse<string>> UploadAvatar(IFormFile file)
     {
-        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var userId = int.Parse(userIdString!);
+        var userId = GetCurrentUserId();
 
         var result = await HandleException(_service.UploadAvatarAsync(userId, file));
+
+        return result;
+    }
+
+    /// <summary>
+    /// Thay đổi mật khẩu tài khoản người dùng
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPatch("password")]
+    [Authorize]
+    public async Task<ApiResponse<bool>> ChangeUserPassword([FromBody] ChangePasswordRequest request)
+    {
+        var result = await HandleException(_service.ChangeUserPasswordAsync(GetCurrentUserId(), request));
 
         return result;
     }

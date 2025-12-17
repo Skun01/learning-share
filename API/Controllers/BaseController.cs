@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Application.Common;
 using Domain.Constants;
 using Microsoft.AspNetCore.Mvc;
@@ -31,5 +32,12 @@ public class BaseController : ControllerBase
             Log.Logger.Error($"Failed: {ex.Message}\n{ex.StackTrace}");
             return ApiResponse<T>.FailResponse(MessageConstant.CommonMessage.INTERNAL_SERVER_ERROR, 500);
         }
+    }
+
+    protected int GetCurrentUserId()
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        return int.TryParse(userIdString, out int userId) ? userId : throw new Exception("Token không chứa user Id");    
     }
 }

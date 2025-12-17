@@ -18,6 +18,25 @@ public class UserService : IUserService
         _storageService = storageService;
     }
 
+    public async Task<bool> ChangeUserPasswordAsync(int userId, ChangePasswordRequest request)
+    {
+        var user = await _unitOfWork.Users.GetByIdAsync(userId);
+
+        if(user == null)
+            throw new ApplicationException(MessageConstant.CommonMessage.NOT_FOUND);
+
+        var isCurrentPasswordMatch = BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash);
+        if (!isCurrentPasswordMatch)
+            throw new ApplicationException(MessageConstant.AuthMessage.CURRENT_PASSWORD_INVALID);
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+
+        _unitOfWork.Users.UpdateAsync(user);
+        await _unitOfWork.SaveChangesAsync();
+
+        return true;
+    }
+
     public async Task<UserProfileDTO> GetProfileAsync(int userId)
     {
         var user = await _unitOfWork.Users.GetByIdAsync(userId);
