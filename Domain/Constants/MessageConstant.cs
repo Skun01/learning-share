@@ -27,4 +27,9 @@ public static class MessageConstant
         public const string INVALID_EXTENSION = "INVALID_EXTENSION_400";
         public const string STORAGE_EXCEED = "STORAGE_EXCEED_400";
     }
+
+    public static class UserSettingsMessage
+    {
+        public const string NOT_SUPPORT_LANGUAGE = "Language_Not_Support_400";
+    }
 }

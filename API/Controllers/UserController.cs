@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
+[ApiController]
+[Route("api/users")]
 public class UserController : BaseController
 {
     private readonly IUserService _service;
