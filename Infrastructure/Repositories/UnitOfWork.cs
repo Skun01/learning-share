@@ -7,12 +7,19 @@ public class UnitOfWork : IUnitOfWork
 {   
     public IUserRepository Users { get; private set; }
     public IUserSettingsRepository UserSettings { get; private set; }
+    public IDeckRepository Decks { get; private set; }
+    public IUserCardProgressRepository UserCardProgresses { get; private set; }
+    public ICardRepository Cards { get; private set;}
+
     private readonly AppDbContext _context;
     public UnitOfWork(AppDbContext context)
     {
         _context = context;
         Users = new UserRepository(_context);
         UserSettings = new UserSettingsRepository(_context);
+        Decks = new DeckRepository(_context);
+        UserCardProgresses = new UserCardProgressRepository(_context);
+        Cards = new CardRepository(_context);
     }
 
     public void Dispose()

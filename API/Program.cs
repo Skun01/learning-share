@@ -31,6 +31,8 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseStaticFiles();
+app.UseCors("AllowAll");
+
 app.UseAuthentication();
 app.UseAuthorization();
 if (app.Environment.IsDevelopment())
