@@ -43,6 +43,18 @@ public class DeckController : BaseController
     }
 
     /// <summary>
+    /// Lấy thống kê tổng quan về decks
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet("statistics")]
+    public async Task<ApiResponse<DeckStatisticsDTO>> GetDeckStatisticsAsync()
+    {
+        var result = await HandleException(_service.GetDeckStatisticsAsync(GetCurrentUserId()));
+
+        return result;
+    }
+
+    /// <summary>
     /// Tạo Deck mới
     /// </summary>
     /// <param name="request"></param>
@@ -65,6 +77,19 @@ public class DeckController : BaseController
     public async Task<ApiResponse<DeckDetailDTO>> UpdateDeckAsync(int id, [FromBody] UpdateDeckRequest request)
     {
         var result = await HandleException(_service.UpdateDeckAsync(GetCurrentUserId(), id, request));
+
+        return result;
+    }
+
+    /// <summary>
+    /// Publish/Unpublish Deck (toggle IsPublic)
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpPatch("{id}/publish")]
+    public async Task<ApiResponse<DeckDetailDTO>> TogglePublishAsync(int id)
+    {
+        var result = await HandleException(_service.TogglePublishAsync(GetCurrentUserId(), id));
 
         return result;
     }

@@ -47,9 +47,7 @@ public class DeckService : IDeckService
         var user = await _unitOfWork.Users.GetByIdAsync(userId);
         
         var cardIds = allCards.Select(c => c.Id).ToList();
-        var allProgresses = (await _unitOfWork.UserCardProgresses.GetByListCardId(cardIds))
-            .Where(p => p.UserId == userId)
-            .ToList();
+        var allProgresses = await _unitOfWork.UserCardProgresses.GetByListCardId(cardIds, userId);
 
         var tagsByDeck = allDeckTags
             .GroupBy(dt => dt.DeckId)
@@ -155,13 +153,53 @@ public class DeckService : IDeckService
         };
     }
 
+    public async Task<DeckStatisticsDTO> GetDeckStatisticsAsync(int userId)
+    {
+        var decks = await _unitOfWork.Decks.GetByUserId(userId);
+        var deckIds = decks.Select(d => d.Id).ToList();
+        
+        if (!deckIds.Any())
+        {
+            return new DeckStatisticsDTO
+            {
+                TotalDecks = 0,
+                TotalCards = 0,
+                TotalLearned = 0,
+                TotalDue = 0,
+                OverallProgress = 0,
+                PublicDecks = 0,
+                PrivateDecks = 0,
+                DecksByType = new Dictionary<string, int>()
+            };
+        }
+
+        var allCards = await _unitOfWork.Cards.GetByListDeckId(deckIds);
+        var cardIds = allCards.Select(c => c.Id).ToList();
+        var progresses = await _unitOfWork.UserCardProgresses.GetByListCardId(cardIds, userId);
+        
+        return new DeckStatisticsDTO
+        {
+            TotalDecks = decks.Count(),
+            TotalCards = allCards.Count(),
+            TotalLearned = progresses.Count(),
+            TotalDue = progresses.Count(p => p.NextReviewDate <= DateTime.UtcNow),
+            OverallProgress = allCards.Any() 
+                ? Math.Round((double)progresses.Count() / allCards.Count() * 100, 1) 
+                : 0,
+            PublicDecks = decks.Count(d => d.IsPublic),
+            PrivateDecks = decks.Count(d => !d.IsPublic),
+            DecksByType = decks.GroupBy(d => d.Type.ToString())
+                .ToDictionary(g => g.Key, g => g.Count())
+        };
+    }
+
     public async Task<DeckDetailDTO> CreateDeckAsync(int userId, CreateDeckRequest request)
     {
         var user = await _unitOfWork.Users.GetByIdAsync(userId);
         if (user == null)
             throw new ApplicationException(MessageConstant.CommonMessage.NOT_FOUND);
 
-        if (!Enum.TryParse<Domain.Enums.DeckType>(request.Type, true, out var deckType))
+        if (!Enum.TryParse<DeckType>(request.Type, true, out var deckType))
             throw new ApplicationException(MessageConstant.DeckMessage.INVALID_DECK_TYPE);
 
         if (request.ParentDeckId.HasValue)
@@ -286,6 +324,22 @@ public class DeckService : IDeckService
         };
     }
 
+    public async Task<DeckDetailDTO> TogglePublishAsync(int userId, int deckId)
+    {
+        var deck = await _unitOfWork.Decks.GetByIdAsync(deckId);
+        if (deck == null)
+            throw new ApplicationException(MessageConstant.DeckMessage.DECK_NOT_FOUND);
+        
+        if (deck.UserId != userId)
+            throw new ApplicationException(MessageConstant.DeckMessage.DECK_PERMISSION_DENIED);
+
+        deck.IsPublic = !deck.IsPublic;
+        _unitOfWork.Decks.UpdateAsync(deck);
+        await _unitOfWork.SaveChangesAsync();
+
+        return await GetDeckByIdAsync(userId, deckId);
+    }
+
     public async Task<bool> DeleteDeckAsync(int userId, int deckId)
     {
         var deck = await _unitOfWork.Decks.GetByIdAsync(deckId);
@@ -308,7 +362,7 @@ public class DeckService : IDeckService
         var cardIds = cards.Select(c => c.Id).ToList();
 
         // Xóa theo thứ tự: Progress -> Examples -> GrammarDetails -> Cards -> Tags -> Deck
-        var progresses = await _unitOfWork.UserCardProgresses.GetByListCardId(cardIds);
+        var progresses = await _unitOfWork.UserCardProgresses.GetByListCardId(cardIds, userId);
         foreach (var progress in progresses)
         {
             _unitOfWork.UserCardProgresses.DeleteAsync(progress);
@@ -357,9 +411,7 @@ public class DeckService : IDeckService
         var cardIds = cards.Select(c => c.Id).ToList();
 
         // Xóa progress của user hiện tại
-        var progresses = (await _unitOfWork.UserCardProgresses.GetByListCardId(cardIds))
-            .Where(p => p.UserId == userId)
-            .ToList();
+        var progresses = await _unitOfWork.UserCardProgresses.GetByListCardId(cardIds, userId);
         
         foreach (var progress in progresses)
         {
