@@ -7,10 +7,11 @@ public static class UserSettingsMapping
 {
     public static UserSettingsDTO ToDTO(this UserSettings entity)
     {
-        return new UserSettingsDTO(
-            entity.EnableGhostMode,
-            entity.DailyGoal,
-            entity.UiLanguage.ToString()
-        );
+        return new UserSettingsDTO
+        {
+            EnableGhostMode = entity.EnableGhostMode,
+            DailyGoal = entity.DailyGoal,
+            UiLanguage = entity.UiLanguage.ToString()
+        };
     }
 }

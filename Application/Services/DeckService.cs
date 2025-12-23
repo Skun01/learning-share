@@ -43,28 +43,31 @@ public class DeckService : IDeckService
             int due = progresses.Count(p => p.NextReviewDate <= DateTime.UtcNow);
             double progressPercent = totalCards == 0 ? 0 : Math.Round((double)learned / totalCards * 100, 1);
 
-            return new DeckSummaryDTO(
-                deck.Id,
-                deck.Name,
-                deck.Description,
-                deck.Type.ToString(),
-                new AuthorDTO(
-                    user.Id,
-                    user.Username,
-                    user.AvatarUrl
-                ),
-                new DeckStatsDTO(
-                    totalCards,
-                    0, 
-                    learned,
-                    progressPercent,
-                    due
-                ),
-                new List<string>(), 
-                deck.IsPublic,
-                null, 
-                deck.CreatedAt
-            );
+            return new DeckSummaryDTO
+            {
+                Id = deck.Id,
+                Name = deck.Name,
+                Description = deck.Description,
+                Type = deck.Type.ToString(),
+                Author = new AuthorDTO
+                {
+                    Id = user.Id,
+                    Name = user.Username,
+                    AvatarUrl = user.AvatarUrl
+                },
+                Stats = new DeckStatsDTO
+                {
+                    TotalCards = totalCards,
+                    Downloads = 0,
+                    Learned = learned,
+                    Progress = progressPercent,
+                    CardsDue = due
+                },
+                Tags = new List<string>(),
+                IsPublic = deck.IsPublic,
+                SourceDeckId = null,
+                CreatedAt = deck.CreatedAt
+            };
         }).ToList();
 
         return result.OrderByDescending(d => d.Stats.CardsDue)

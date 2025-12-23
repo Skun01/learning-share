@@ -1,7 +1,8 @@
 namespace Application.DTOs.User;
 
-public record class AuthorDTO(
-    int Id,
-    string Name,
-    string? AvatarUrl
-);
+public class AuthorDTO
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? AvatarUrl { get; set; }
+}

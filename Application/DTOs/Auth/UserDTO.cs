@@ -2,10 +2,11 @@ using Domain.Enums;
 
 namespace Application.DTOs.Auth;
 
-public record class UserDTO(
-    int Id,
-    string Username,
-    string Email,
-    UserRole Role,
-    string AvatarUrl
-);
+public class UserDTO
+{
+    public int Id { get; set; }
+    public string Username { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public UserRole Role { get; set; }
+    public string AvatarUrl { get; set; } = string.Empty;
+}

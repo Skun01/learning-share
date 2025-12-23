@@ -17,24 +17,26 @@ public static class UserMapping
 
     public static UserDTO ToDTO(this User user)
     {
-        return new UserDTO(
-            user.Id,
-            user.Username,
-            user.Email,
-            user.Role,
-            user.AvatarUrl ?? string.Empty
-        );
+        return new UserDTO
+        {
+            Id = user.Id,
+            Username = user.Username,
+            Email = user.Email,
+            Role = user.Role,
+            AvatarUrl = user.AvatarUrl ?? string.Empty
+        };
     }
 
     public static UserProfileDTO ToProfileDTO(this User user, UserSettings settings)
     {
-        return new UserProfileDTO(
-            user.Id,
-            user.Username,
-            user.Email,
-            user.Role.ToString(),
-            user.AvatarUrl,
-            settings.ToDTO()
-        );
+        return new UserProfileDTO
+        {
+            Id = user.Id,
+            Username = user.Username,
+            Email = user.Email,
+            Role = user.Role.ToString(),
+            AvatarUrl = user.AvatarUrl,
+            Settings = settings.ToDTO()
+        };
     }
 }

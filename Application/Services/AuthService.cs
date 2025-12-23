@@ -110,6 +110,11 @@ public class AuthService : IAuthService
         var accessToken = _tokenService.GenerateAccessToken(user);
         var refreshToken = _tokenService.GenerateRefreshToken();
 
-        return new AuthDTO(accessToken, refreshToken, user.ToDTO());
+        return new AuthDTO
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            User = user.ToDTO()
+        };
     }
 }

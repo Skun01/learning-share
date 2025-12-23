@@ -1,7 +1,8 @@
 namespace Application.DTOs.Auth;
 
-public record class AuthDTO(
-    string AccessToken,
-    string RefreshToken,
-    UserDTO User
-);
+public class AuthDTO
+{
+    public string AccessToken { get; set; } = string.Empty;
+    public string RefreshToken { get; set; } = string.Empty;
+    public UserDTO User { get; set; } = null!;
+}

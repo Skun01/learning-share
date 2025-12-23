@@ -1,5 +1,6 @@
 namespace Application.DTOs.Auth;
 
-public record class ForgotPasswordRequest(
-    string Email
-);
+public class ForgotPasswordRequest
+{
+    public string Email { get; set; } = string.Empty;
+}
