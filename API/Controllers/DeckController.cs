@@ -55,4 +55,30 @@ public class DeckController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Xóa Deck
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpDelete("{id}")]
+    public async Task<ApiResponse<bool>> DeleteDeckAsync(int id)
+    {
+        var result = await HandleException(_service.DeleteDeckAsync(GetCurrentUserId(), id));
+
+        return result;
+    }
+
+    /// <summary>
+    /// Học lại từ đầu - Reset tiến độ học
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpPost("{id}/reset")]
+    public async Task<ApiResponse<bool>> ResetDeckProgressAsync(int id)
+    {
+        var result = await HandleException(_service.ResetDeckProgressAsync(GetCurrentUserId(), id));
+
+        return result;
+    }
 }

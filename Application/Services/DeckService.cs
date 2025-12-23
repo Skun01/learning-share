@@ -216,4 +216,88 @@ public class DeckService : IDeckService
             CreatedAt = deck.CreatedAt
         };
     }
+
+    public async Task<bool> DeleteDeckAsync(int userId, int deckId)
+    {
+        var deck = await _unitOfWork.Decks.GetByIdAsync(deckId);
+        if (deck == null)
+            throw new ApplicationException(MessageConstant.DeckMessage.DECK_NOT_FOUND);
+        
+        if (deck.UserId != userId)
+            throw new ApplicationException(MessageConstant.DeckMessage.DECK_PERMISSION_DENIED);
+
+        // Xử lý child decks (set ParentDeckId = null)
+        var childDecks = await _unitOfWork.Decks.FindAsync(d => d.ParentDeckId == deckId);
+        foreach (var childDeck in childDecks)
+        {
+            childDeck.ParentDeckId = null;
+            _unitOfWork.Decks.UpdateAsync(childDeck);
+        }
+
+        // Lấy tất cả cards trong deck
+        var cards = await _unitOfWork.Cards.FindAsync(c => c.DeckId == deckId);
+        var cardIds = cards.Select(c => c.Id).ToList();
+
+        // Xóa theo thứ tự: Progress -> Examples -> GrammarDetails -> Cards -> Tags -> Deck
+        var progresses = await _unitOfWork.UserCardProgresses.GetByListCardId(cardIds);
+        foreach (var progress in progresses)
+        {
+            _unitOfWork.UserCardProgresses.DeleteAsync(progress);
+        }
+
+        var examples = await _unitOfWork.CardExamples.FindAsync(e => cardIds.Contains(e.CardId));
+        foreach (var example in examples)
+        {
+            _unitOfWork.CardExamples.DeleteAsync(example);
+        }
+
+        var grammarDetails = await _unitOfWork.GrammarDetails.FindAsync(g => cardIds.Contains(g.CardId));
+        foreach (var detail in grammarDetails)
+        {
+            _unitOfWork.GrammarDetails.DeleteAsync(detail);
+        }
+
+        foreach (var card in cards)
+        {
+            _unitOfWork.Cards.DeleteAsync(card);
+        }
+
+        var tags = await _unitOfWork.DeckTags.FindAsync(dt => dt.DeckId == deckId);
+        foreach (var tag in tags)
+        {
+            _unitOfWork.DeckTags.DeleteAsync(tag);
+        }
+
+        _unitOfWork.Decks.DeleteAsync(deck);
+
+        await _unitOfWork.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> ResetDeckProgressAsync(int userId, int deckId)
+    {
+        var deck = await _unitOfWork.Decks.GetByIdAsync(deckId);
+        if (deck == null)
+            throw new ApplicationException(MessageConstant.DeckMessage.DECK_NOT_FOUND);
+        
+        if (deck.UserId != userId)
+            throw new ApplicationException(MessageConstant.DeckMessage.DECK_PERMISSION_DENIED);
+
+        // Lấy tất cả cards trong deck
+        var cards = await _unitOfWork.Cards.FindAsync(c => c.DeckId == deckId);
+        var cardIds = cards.Select(c => c.Id).ToList();
+
+        // Xóa progress của user hiện tại
+        var progresses = (await _unitOfWork.UserCardProgresses.GetByListCardId(cardIds))
+            .Where(p => p.UserId == userId)
+            .ToList();
+        
+        foreach (var progress in progresses)
+        {
+            _unitOfWork.UserCardProgresses.DeleteAsync(progress);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+        return true;
+    }
 }

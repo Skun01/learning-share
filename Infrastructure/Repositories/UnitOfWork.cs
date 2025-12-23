@@ -12,6 +12,8 @@ public class UnitOfWork : IUnitOfWork
     public IRepository<DeckTag> DeckTags { get; private set; }
     public IUserCardProgressRepository UserCardProgresses { get; private set; }
     public ICardRepository Cards { get; private set;}
+    public ICardExampleRepository CardExamples { get; private set; }
+    public IGrammarDetailsRepository GrammarDetails { get; private set; }
 
     private readonly AppDbContext _context;
     public UnitOfWork(AppDbContext context)
@@ -23,6 +25,8 @@ public class UnitOfWork : IUnitOfWork
         DeckTags = new Repository<DeckTag>(_context);
         UserCardProgresses = new UserCardProgressRepository(_context);
         Cards = new CardRepository(_context);
+        CardExamples = new CardExampleRepository(_context);
+        GrammarDetails = new GrammarDetailsRepository(_context);
     }
 
     public void Dispose()

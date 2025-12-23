@@ -10,5 +10,7 @@ public interface IUnitOfWork : IDisposable
     IRepository<DeckTag> DeckTags { get; }
     IUserCardProgressRepository UserCardProgresses { get; }
     ICardRepository Cards { get; }
+    ICardExampleRepository CardExamples { get; }
+    IGrammarDetailsRepository GrammarDetails { get; }
     Task<int> SaveChangesAsync();
 }
