@@ -17,20 +17,30 @@ public class DeckService : IDeckService
 
     public async Task<IEnumerable<DeckSummaryDTO>> GetMyDecksAsync(int userId)
     {   
-        var user = await _unitOfWork.Users.GetByIdAsync(userId);
-        if(user == null)
-            throw new ApplicationException(MessageConstant.CommonMessage.NOT_FOUND);
-
+        // 1. Get user's decks
         var decks = await _unitOfWork.Decks.GetByUserId(userId);
         if(!decks.Any())
             return new List<DeckSummaryDTO>();
 
-        var decksId = decks.Select(d => d.Id).ToList();
-        var allCards = await _unitOfWork.Cards.GetByListDeckId(decksId);
-        
-        var cardIds = allCards.Select(c => c.Id).ToList();
-        var allProgresses = await _unitOfWork.UserCardProgresses.GetByListCardId(cardIds);
+        var deckIds = decks.Select(d => d.Id).ToList();
 
+        // 2. Load all related data
+        var allCards = await _unitOfWork.Cards.GetByListDeckId(deckIds);
+        var allDeckTags = await _unitOfWork.DeckTags.FindAsync(dt => deckIds.Contains(dt.DeckId));
+        var user = await _unitOfWork.Users.GetByIdAsync(userId);
+        
+        // 3. Load progress for all cards (filtered by user)
+        var cardIds = allCards.Select(c => c.Id).ToList();
+        var allProgresses = (await _unitOfWork.UserCardProgresses.GetByListCardId(cardIds))
+            .Where(p => p.UserId == userId)  // Filter by current user
+            .ToList();
+
+        // 4. Group tags by deck
+        var tagsByDeck = allDeckTags
+            .GroupBy(dt => dt.DeckId)
+            .ToDictionary(g => g.Key, g => g.Select(dt => dt.TagName).ToList());
+
+        // 5. Map to DTOs with stats calculation
         var result = decks.Select(deck =>
         {
             var cardsInDeck = allCards.Where(c => c.DeckId == deck.Id);
@@ -58,14 +68,16 @@ public class DeckService : IDeckService
                 Stats = new DeckStatsDTO
                 {
                     TotalCards = totalCards,
-                    Downloads = 0,
+                    Downloads = deck.Downloads,
                     Learned = learned,
                     Progress = progressPercent,
                     CardsDue = due
                 },
-                Tags = new List<string>(),
+                Tags = tagsByDeck.ContainsKey(deck.Id) 
+                    ? tagsByDeck[deck.Id] 
+                    : new List<string>(),
                 IsPublic = deck.IsPublic,
-                SourceDeckId = null,
+                SourceDeckId = deck.ParentDeckId,
                 CreatedAt = deck.CreatedAt
             };
         }).ToList();
