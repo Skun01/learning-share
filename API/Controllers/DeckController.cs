@@ -41,4 +41,18 @@ public class DeckController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Cập nhật thông tin Deck
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPut("{id}")]
+    public async Task<ApiResponse<DeckDetailDTO>> UpdateDeckAsync(int id, [FromBody] UpdateDeckRequest request)
+    {
+        var result = await HandleException(_service.UpdateDeckAsync(GetCurrentUserId(), id, request));
+
+        return result;
+    }
 }
