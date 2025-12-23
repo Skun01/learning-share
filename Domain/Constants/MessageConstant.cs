@@ -32,4 +32,11 @@ public static class MessageConstant
     {
         public const string NOT_SUPPORT_LANGUAGE = "Language_Not_Support_400";
     }
+
+    public static class DeckMessage
+    {
+        public const string INVALID_DECK_TYPE = "Deck_Invalid_Type_400"; // Loại deck không hợp lệ
+        public const string PARENT_DECK_NOT_FOUND = "Deck_Parent_Not_Found_404"; // Deck cha không tồn tại
+        public const string PARENT_DECK_PERMISSION_DENIED = "Deck_Parent_Permission_Denied_403"; // Không có quyền tạo deck con
+    }
 }

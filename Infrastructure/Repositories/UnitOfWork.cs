@@ -1,4 +1,5 @@
 using Application.IRepositories;
+using Domain.Entities;
 using Infrastructure.Persistence;
 
 namespace Infrastructure.Repositories;
@@ -8,6 +9,7 @@ public class UnitOfWork : IUnitOfWork
     public IUserRepository Users { get; private set; }
     public IUserSettingsRepository UserSettings { get; private set; }
     public IDeckRepository Decks { get; private set; }
+    public IRepository<DeckTag> DeckTags { get; private set; }
     public IUserCardProgressRepository UserCardProgresses { get; private set; }
     public ICardRepository Cards { get; private set;}
 
@@ -18,6 +20,7 @@ public class UnitOfWork : IUnitOfWork
         Users = new UserRepository(_context);
         UserSettings = new UserSettingsRepository(_context);
         Decks = new DeckRepository(_context);
+        DeckTags = new Repository<DeckTag>(_context);
         UserCardProgresses = new UserCardProgressRepository(_context);
         Cards = new CardRepository(_context);
     }

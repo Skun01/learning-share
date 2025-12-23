@@ -28,4 +28,17 @@ public class DeckController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Tạo Deck mới
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    public async Task<ApiResponse<DeckDetailDTO>> CreateDeckAsync([FromBody] CreateDeckRequest request)
+    {
+        var result = await HandleException(_service.CreateDeckAsync(GetCurrentUserId(), request));
+
+        return result;
+    }
 }

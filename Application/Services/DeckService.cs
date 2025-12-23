@@ -73,4 +73,82 @@ public class DeckService : IDeckService
         return result.OrderByDescending(d => d.Stats.CardsDue)
             .ThenByDescending(d => d.CreatedAt);
     }
+
+    public async Task<DeckDetailDTO> CreateDeckAsync(int userId, CreateDeckRequest request)
+    {
+        // Validate user exists
+        var user = await _unitOfWork.Users.GetByIdAsync(userId);
+        if (user == null)
+            throw new ApplicationException(MessageConstant.CommonMessage.NOT_FOUND);
+
+        // Validate DeckType
+        if (!Enum.TryParse<Domain.Enums.DeckType>(request.Type, true, out var deckType))
+            throw new ApplicationException(MessageConstant.DeckMessage.INVALID_DECK_TYPE);
+
+        // Validate ParentDeckId if provided
+        if (request.ParentDeckId.HasValue)
+        {
+            var parentDeck = await _unitOfWork.Decks.GetByIdAsync(request.ParentDeckId.Value);
+            if (parentDeck == null)
+                throw new ApplicationException(MessageConstant.DeckMessage.PARENT_DECK_NOT_FOUND);
+            
+            if (parentDeck.UserId != userId)
+                throw new ApplicationException(MessageConstant.DeckMessage.PARENT_DECK_PERMISSION_DENIED);
+        }
+
+        // Create Deck entity
+        var newDeck = new Domain.Entities.Deck
+        {
+            UserId = userId,
+            Name = request.Name,
+            Description = request.Description,
+            Type = deckType,
+            IsPublic = request.IsPublic,
+            ParentDeckId = request.ParentDeckId,
+            TotalCards = 0,
+            Downloads = 0
+        };
+
+        await _unitOfWork.Decks.AddAsync(newDeck);
+        await _unitOfWork.SaveChangesAsync();
+
+        // Create DeckTags if tags provided
+        var processedTags = new List<string>();
+        if (request.Tags != null && request.Tags.Any())
+        {
+            var deckTags = request.Tags
+                .Where(tag => !string.IsNullOrWhiteSpace(tag))
+                .Select(tag => tag.Trim())
+                .Distinct()
+                .Select(tag => new Domain.Entities.DeckTag
+                {
+                    DeckId = newDeck.Id,
+                    TagName = tag
+                })
+                .ToList();
+
+            foreach (var deckTag in deckTags)
+            {
+                await _unitOfWork.DeckTags.AddAsync(deckTag);
+                processedTags.Add(deckTag.TagName);
+            }
+            
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        // Return DeckDetailDTO
+        return new DeckDetailDTO
+        {
+            Id = newDeck.Id,
+            Name = newDeck.Name,
+            Description = newDeck.Description,
+            Type = newDeck.Type.ToString(),
+            IsPublic = newDeck.IsPublic,
+            ParentDeckId = newDeck.ParentDeckId,
+            Tags = processedTags,
+            TotalCards = 0,
+            Downloads = 0,
+            CreatedAt = newDeck.CreatedAt
+        };
+    }
 }
