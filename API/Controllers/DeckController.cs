@@ -22,9 +22,22 @@ public class DeckController : BaseController
     /// </summary>
     /// <returns></returns>
     [HttpGet]
-    public async Task<ApiResponse<IEnumerable<DeckSummaryDTO>>> GetMyDecksAsync()
+    public async Task<ApiResponse<IEnumerable<DeckSummaryDTO>>> GetMyDecksAsync([FromQuery] GetMyDecksRequest request)
     {
-        var result = await HandleException(_service.GetMyDecksAsync(GetCurrentUserId()));
+        var (data, metaData) = await _service.GetMyDecksAsync(GetCurrentUserId(), request);
+
+        return ApiResponse<IEnumerable<DeckSummaryDTO>>.SuccessResponse(data, metaData);
+    }
+
+    /// <summary>
+    /// Lấy chi tiết Deck theo ID
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpGet("{id}")]
+    public async Task<ApiResponse<DeckDetailDTO>> GetDeckByIdAsync(int id)
+    {
+        var result = await HandleException(_service.GetDeckByIdAsync(GetCurrentUserId(), id));
 
         return result;
     }
