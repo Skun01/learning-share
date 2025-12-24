@@ -90,4 +90,33 @@ public class DeckRepository : Repository<Deck>, IDeckRepository
             .Include(d => d.DeckTags)
             .FirstOrDefaultAsync(d => d.Id == deckId && d.IsPublic);
     }
+
+    public async Task<IEnumerable<Deck>> GetTrendingDecksAsync(int limit)
+    {
+        return await _context.Decks
+            .Where(d => d.IsPublic)
+            .OrderByDescending(d => d.Downloads)
+            .ThenByDescending(d => d.CreatedAt)
+            .Take(limit)
+            .Include(d => d.User)
+            .Include(d => d.DeckTags)
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<TagStatDTO>> GetPopularTagsAsync(int limit)
+    {
+        return await _context.DeckTags
+            .Where(dt => dt.Deck.IsPublic)
+            .GroupBy(dt => dt.TagName)
+            .Select(g => new TagStatDTO
+            {
+                Name = g.Key,
+                Count = g.Count()
+            })
+            .OrderByDescending(t => t.Count)
+            .Take(limit)
+            .AsNoTracking()
+            .ToListAsync();
+    }
 }

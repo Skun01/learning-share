@@ -48,6 +48,32 @@ public class StoreController : BaseController
     }
 
     /// <summary>
+    /// Lấy danh sách decks đang trending
+    /// </summary>
+    /// <param name="limit"></param>
+    /// <returns></returns>
+    [HttpGet("trending")]
+    public async Task<ApiResponse<IEnumerable<PublicDeckDetailDTO>>> GetTrendingDecksAsync(
+        [FromQuery] int limit = 10)
+    {
+        var result = await HandleException(_service.GetTrendingDecksAsync(limit));
+        return result;
+    }
+
+    /// <summary>
+    /// Lấy danh sách tags phổ biến
+    /// </summary>
+    /// <param name="limit"></param>
+    /// <returns></returns>
+    [HttpGet("~/api/store/tags")]
+    public async Task<ApiResponse<IEnumerable<TagStatDTO>>> GetPopularTagsAsync(
+        [FromQuery] int limit = 20)
+    {
+        var result = await HandleException(_service.GetPopularTagsAsync(limit));
+        return result;
+    }
+
+    /// <summary>
     /// Lấy chi tiết public deck với sample cards
     /// </summary>
     /// <param name="id"></param>

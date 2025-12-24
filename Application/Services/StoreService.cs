@@ -96,4 +96,32 @@ public class StoreService : IStoreService
             CreatedAt = deck.CreatedAt
         });
     }
+
+    public async Task<IEnumerable<PublicDeckDetailDTO>> GetTrendingDecksAsync(int limit)
+    {
+        var decks = await _unitOfWork.Decks.GetTrendingDecksAsync(limit);
+        
+        return decks.Select(deck => new PublicDeckDetailDTO
+        {
+            Id = deck.Id,
+            Name = deck.Name,
+            Description = deck.Description,
+            Type = deck.Type.ToString(),
+            Author = new AuthorDTO
+            {
+                Id = deck.User.Id,
+                Name = deck.User.Username,
+                AvatarUrl = deck.User.AvatarUrl
+            },
+            Tags = deck.DeckTags.Select(t => t.TagName).ToList(),
+            TotalCards = deck.TotalCards,
+            Downloads = deck.Downloads,
+            CreatedAt = deck.CreatedAt
+        });
+    }
+
+    public async Task<IEnumerable<TagStatDTO>> GetPopularTagsAsync(int limit)
+    {
+        return await _unitOfWork.Decks.GetPopularTagsAsync(limit);
+    }
 }

@@ -13,4 +13,6 @@ public interface IDeckRepository : IRepository<Deck>
     Task<IEnumerable<Deck>> GetMyDecksByFilterAsync(QueryDTO<GetMyDecksRequest> request);
     Task<Deck?> GetPublicByIdAsync(int deckId);
     Task<Deck> CreateCloneAsync(Deck originDeck, int userId, string? customName);
+    Task<IEnumerable<Deck>> GetTrendingDecksAsync(int limit);
+    Task<IEnumerable<TagStatDTO>> GetPopularTagsAsync(int limit);
 }
