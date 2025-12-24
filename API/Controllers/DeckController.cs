@@ -1,4 +1,5 @@
 using Application.Common;
+using Application.DTOs.Common;
 using Application.DTOs.Deck;
 using Application.IServices;
 using Microsoft.AspNetCore.Authorization;
@@ -24,9 +25,21 @@ public class DeckController : BaseController
     [HttpGet]
     public async Task<ApiResponse<IEnumerable<DeckSummaryDTO>>> GetMyDecksAsync([FromQuery] GetMyDecksRequest request)
     {
-        var (data, metaData) = await _service.GetMyDecksAsync(GetCurrentUserId(), request);
+        var requestModel = new QueryDTO<GetMyDecksRequest>
+        {
+            UserId = GetCurrentUserId(),
+            Query = request
+        };
 
-        return ApiResponse<IEnumerable<DeckSummaryDTO>>.SuccessResponse(data, metaData);
+        var result = await HandleException(_service.GetMyDecksByFilterAsync(requestModel));
+        result.MetaData = new MetaData
+        {
+            Page = request.Page,
+            PageSize = request.PageSize,
+            Total = requestModel.Total
+        };
+
+        return result;
     }
 
     /// <summary>

@@ -1,11 +1,12 @@
 using Application.Common;
+using Application.DTOs.Common;
 using Application.DTOs.Deck;
 
 namespace Application.IServices;
 
 public interface IDeckService
 {
-    Task<(IEnumerable<DeckSummaryDTO> Data, MetaData MetaData)> GetMyDecksAsync(int userId, GetMyDecksRequest request);
+    Task<IEnumerable<DeckSummaryDTO>> GetMyDecksByFilterAsync(QueryDTO<GetMyDecksRequest> request);
     Task<DeckDetailDTO> GetDeckByIdAsync(int userId, int deckId);
     Task<DeckStatisticsDTO> GetDeckStatisticsAsync(int userId);
     Task<DeckDetailDTO> CreateDeckAsync(int userId, CreateDeckRequest request);

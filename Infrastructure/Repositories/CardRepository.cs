@@ -13,4 +13,21 @@ public class CardRepository : Repository<Card>, ICardRepository
     {
         return await _context.Cards.Where(c => deckIds.Contains(c.DeckId)).ToListAsync();
     }
+
+    public async Task<IEnumerable<Card>> GetSampleCardsByDeckIdAsync(int deckId, int count = 5)
+    {
+        return await _context.Cards
+            .Where(c => c.DeckId == deckId)
+            .Take(count)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<Card>> GetCardsByDeckIdWithDetailsAsync(int deckId)
+    {
+        return await _context.Cards
+            .Where(c => c.DeckId == deckId)
+            .Include(c => c.Examples)
+            .Include(c => c.GrammarDetails)
+            .ToListAsync();
+    }
 }

@@ -1,4 +1,5 @@
 using Application.Common;
+using Application.DTOs.Common;
 using Application.DTOs.Deck;
 using Application.DTOs.User;
 using Application.IRepositories;
@@ -17,37 +18,19 @@ public class DeckService : IDeckService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<(IEnumerable<DeckSummaryDTO> Data, MetaData MetaData)> GetMyDecksAsync(int userId, GetMyDecksRequest request)
+    public async Task<IEnumerable<DeckSummaryDTO>> GetMyDecksByFilterAsync(QueryDTO<GetMyDecksRequest> request)
     {   
-        var decks = await _unitOfWork.Decks.GetByUserId(userId);
-        
-        if(!decks.Any())
-            return (new List<DeckSummaryDTO>(), new MetaData { Total = 0 });
+        var decks = await _unitOfWork.Decks.GetMyDecksByFilterAsync(request);
 
-        // Apply filters
-        if (!string.IsNullOrEmpty(request.Type))
-        {
-            if (Enum.TryParse<DeckType>(request.Type, true, out var deckType))
-            {
-                decks = decks.Where(d => d.Type == deckType).ToList();
-            }
-        }
-
-        if (request.IsPublic.HasValue)
-        {
-            decks = decks.Where(d => d.IsPublic == request.IsPublic.Value).ToList();
-        }
-
-        var total = decks.Count();
         var deckIds = decks.Select(d => d.Id).ToList();
 
         // Load related data
         var allCards = await _unitOfWork.Cards.GetByListDeckId(deckIds);
         var allDeckTags = await _unitOfWork.DeckTags.FindAsync(dt => deckIds.Contains(dt.DeckId));
-        var user = await _unitOfWork.Users.GetByIdAsync(userId);
+        var user = await _unitOfWork.Users.GetByIdAsync(request.UserId);
         
         var cardIds = allCards.Select(c => c.Id).ToList();
-        var allProgresses = await _unitOfWork.UserCardProgresses.GetByListCardId(cardIds, userId);
+        var allProgresses = await _unitOfWork.UserCardProgresses.GetByListCardId(cardIds, request.UserId);
 
         var tagsByDeck = allDeckTags
             .GroupBy(dt => dt.DeckId)
@@ -94,36 +77,7 @@ public class DeckService : IDeckService
             };
         }).ToList();
 
-        // Apply sorting
-        result = request.SortBy.ToLower() switch
-        {
-            "name" => request.SortOrder == "asc" 
-                ? result.OrderBy(d => d.Name).ToList()
-                : result.OrderByDescending(d => d.Name).ToList(),
-            "createdat" => request.SortOrder == "asc"
-                ? result.OrderBy(d => d.CreatedAt).ToList()
-                : result.OrderByDescending(d => d.CreatedAt).ToList(),
-            "progress" => request.SortOrder == "asc"
-                ? result.OrderBy(d => d.Stats.Progress).ToList()
-                : result.OrderByDescending(d => d.Stats.Progress).ToList(),
-            _ => result.OrderByDescending(d => d.Stats.CardsDue)
-                .ThenByDescending(d => d.CreatedAt).ToList()
-        };
-
-        // Pagination
-        var pagedResult = result
-            .Skip((request.Page - 1) * request.PageSize)
-            .Take(request.PageSize)
-            .ToList();
-
-        var metaData = new MetaData
-        {
-            Page = request.Page,
-            PageSize = request.PageSize,
-            Total = total
-        };
-
-        return (pagedResult, metaData);
+        return result;
     }
 
     public async Task<DeckDetailDTO> GetDeckByIdAsync(int userId, int deckId)
@@ -132,7 +86,6 @@ public class DeckService : IDeckService
         if (deck == null)
             throw new ApplicationException(MessageConstant.DeckMessage.DECK_NOT_FOUND);
         
-        // Chỉ owner hoặc public deck mới xem được
         if (deck.UserId != userId && !deck.IsPublic)
             throw new ApplicationException(MessageConstant.DeckMessage.DECK_PERMISSION_DENIED);
 
