@@ -236,4 +236,161 @@ public class CardService : ICardService
             }).ToList()
         };
     }
+
+    public async Task<BulkCreateCardsResponse> BulkCreateCardsAsync(int userId, int deckId, BulkCreateCardsRequest request)
+    {
+        var deck = await _unitOfWork.Decks.GetByIdAsync(deckId);
+        if (deck == null)
+            throw new ApplicationException(MessageConstant.DeckMessage.DECK_NOT_FOUND);
+        
+        if (deck.UserId != userId)
+            throw new ApplicationException(MessageConstant.DeckMessage.DECK_PERMISSION_DENIED);
+
+        var response = new BulkCreateCardsResponse
+        {
+            TotalRequested = request.Cards.Count,
+            CreatedCards = new List<CardDetailDTO>(),
+            Errors = new List<BulkOperationError>()
+        };
+
+        var deckType = deck.Type.ToString();
+        int createdCount = 0;
+
+        for (int i = 0; i < request.Cards.Count; i++)
+        {
+            var cardRequest = request.Cards[i];
+
+            // Validate card type
+            if (!Enum.TryParse<CardType>(cardRequest.Type, true, out var cardType))
+            {
+                response.Errors.Add(new BulkOperationError { Index = i, Message = "Invalid card type" });
+                continue;
+            }
+
+            // Validate card type matches deck type
+            if (cardType.ToString() != deckType)
+            {
+                response.Errors.Add(new BulkOperationError { Index = i, Message = "Card type must match deck type" });
+                continue;
+            }
+
+            // Create card
+            var card = new Card
+            {
+                DeckId = deckId,
+                Type = cardType,
+                Term = cardRequest.Term,
+                Meaning = cardRequest.Meaning,
+                Synonyms = cardRequest.Synonyms,
+                ImageUrl = cardRequest.ImageUrl,
+                Note = cardRequest.Note
+            };
+
+            await _unitOfWork.Cards.AddAsync(card);
+            await _unitOfWork.SaveChangesAsync();
+
+            // Add grammar details if provided
+            if (cardRequest.GrammarDetails != null && cardType == CardType.Grammar)
+            {
+                if (!Enum.TryParse<Level>(cardRequest.GrammarDetails.Level, true, out var level))
+                    level = Level.N5;
+
+                var grammarDetails = new GrammarDetails
+                {
+                    CardId = card.Id,
+                    Structure = cardRequest.GrammarDetails.Structure,
+                    Explanation = cardRequest.GrammarDetails.Explanation,
+                    Caution = cardRequest.GrammarDetails.Caution,
+                    Level = level
+                };
+                await _unitOfWork.GrammarDetails.AddAsync(grammarDetails);
+            }
+
+            // Add examples if provided
+            if (cardRequest.Examples != null && cardRequest.Examples.Any())
+            {
+                foreach (var ex in cardRequest.Examples)
+                {
+                    var example = new CardExample
+                    {
+                        CardId = card.Id,
+                        SentenceJapanese = ex.SentenceJapanese,
+                        SentenceMeaning = ex.SentenceMeaning,
+                        ClozePart = ex.ClozePart,
+                        AlternativeAnswers = ex.AlternativeAnswers,
+                        AudioUrl = ex.AudioUrl
+                    };
+                    await _unitOfWork.CardExamples.AddAsync(example);
+                }
+            }
+
+            createdCount++;
+            var createdCard = await _unitOfWork.Cards.GetByIdWithDetailsAsync(card.Id);
+            response.CreatedCards.Add(MapToDetailDTO(createdCard!));
+        }
+
+        // Update deck total cards
+        deck.TotalCards += createdCount;
+        _unitOfWork.Decks.UpdateAsync(deck);
+        await _unitOfWork.SaveChangesAsync();
+
+        response.TotalCreated = createdCount;
+        if (!response.Errors.Any()) response.Errors = null;
+
+        return response;
+    }
+
+    public async Task<BulkDeleteCardsResponse> BulkDeleteCardsAsync(int userId, int deckId, BulkDeleteCardsRequest request)
+    {
+        var deck = await _unitOfWork.Decks.GetByIdAsync(deckId);
+        if (deck == null)
+            throw new ApplicationException(MessageConstant.DeckMessage.DECK_NOT_FOUND);
+        
+        if (deck.UserId != userId)
+            throw new ApplicationException(MessageConstant.DeckMessage.DECK_PERMISSION_DENIED);
+
+        var response = new BulkDeleteCardsResponse
+        {
+            TotalRequested = request.CardIds.Count,
+            DeletedIds = new List<int>(),
+            FailedIds = new List<int>()
+        };
+
+        foreach (var cardId in request.CardIds)
+        {
+            var card = await _unitOfWork.Cards.GetByIdWithDetailsAsync(cardId);
+            if (card == null || card.DeckId != deckId)
+            {
+                response.FailedIds.Add(cardId);
+                continue;
+            }
+
+            // Delete related data
+            if (card.Examples.Any())
+            {
+                foreach (var example in card.Examples.ToList())
+                {
+                    _unitOfWork.CardExamples.DeleteAsync(example);
+                }
+            }
+
+            if (card.GrammarDetails != null)
+            {
+                _unitOfWork.GrammarDetails.DeleteAsync(card.GrammarDetails);
+            }
+
+            _unitOfWork.Cards.DeleteAsync(card);
+            response.DeletedIds.Add(cardId);
+        }
+
+        // Update deck total cards
+        deck.TotalCards -= response.DeletedIds.Count;
+        _unitOfWork.Decks.UpdateAsync(deck);
+        await _unitOfWork.SaveChangesAsync();
+
+        response.TotalDeleted = response.DeletedIds.Count;
+        if (!response.FailedIds.Any()) response.FailedIds = null;
+
+        return response;
+    }
 }

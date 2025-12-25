@@ -9,4 +9,6 @@ public interface ICardService
     Task<CardDetailDTO> CreateCardAsync(int userId, int deckId, CreateCardRequest request);
     Task<CardDetailDTO> UpdateCardAsync(int userId, int deckId, int cardId, UpdateCardRequest request);
     Task<bool> DeleteCardAsync(int userId, int deckId, int cardId);
+    Task<BulkCreateCardsResponse> BulkCreateCardsAsync(int userId, int deckId, BulkCreateCardsRequest request);
+    Task<BulkDeleteCardsResponse> BulkDeleteCardsAsync(int userId, int deckId, BulkDeleteCardsRequest request);
 }

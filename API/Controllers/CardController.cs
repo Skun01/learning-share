@@ -82,4 +82,30 @@ public class CardController : BaseController
         var result = await HandleException(_service.DeleteCardAsync(GetCurrentUserId(), deckId, id));
         return result;
     }
+
+    /// <summary>
+    /// Tạo nhiều cards cùng lúc
+    /// </summary>
+    /// <param name="deckId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost("bulk")]
+    public async Task<ApiResponse<BulkCreateCardsResponse>> BulkCreateCardsAsync(int deckId, [FromBody] BulkCreateCardsRequest request)
+    {
+        var result = await HandleException(_service.BulkCreateCardsAsync(GetCurrentUserId(), deckId, request));
+        return result;
+    }
+
+    /// <summary>
+    /// Xóa nhiều cards cùng lúc
+    /// </summary>
+    /// <param name="deckId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpDelete("bulk")]
+    public async Task<ApiResponse<BulkDeleteCardsResponse>> BulkDeleteCardsAsync(int deckId, [FromBody] BulkDeleteCardsRequest request)
+    {
+        var result = await HandleException(_service.BulkDeleteCardsAsync(GetCurrentUserId(), deckId, request));
+        return result;
+    }
 }
