@@ -393,4 +393,150 @@ public class CardService : ICardService
 
         return response;
     }
+
+    public async Task<CardExampleDTO> AddExampleAsync(int userId, int cardId, CreateExampleRequest request)
+    {
+        var card = await _unitOfWork.Cards.GetByIdWithDetailsAsync(cardId);
+        if (card == null)
+            throw new ApplicationException(MessageConstant.CardMessage.CARD_NOT_FOUND);
+
+        var deck = await _unitOfWork.Decks.GetByIdAsync(card.DeckId);
+        if (deck == null || deck.UserId != userId)
+            throw new ApplicationException(MessageConstant.DeckMessage.DECK_PERMISSION_DENIED);
+
+        var example = new CardExample
+        {
+            CardId = cardId,
+            SentenceJapanese = request.SentenceJapanese,
+            SentenceMeaning = request.SentenceMeaning,
+            ClozePart = request.ClozePart,
+            AlternativeAnswers = request.AlternativeAnswers,
+            AudioUrl = request.AudioUrl
+        };
+
+        await _unitOfWork.CardExamples.AddAsync(example);
+        await _unitOfWork.SaveChangesAsync();
+
+        return new CardExampleDTO
+        {
+            Id = example.Id,
+            SentenceJapanese = example.SentenceJapanese,
+            SentenceMeaning = example.SentenceMeaning,
+            ClozePart = example.ClozePart,
+            AlternativeAnswers = example.AlternativeAnswers,
+            AudioUrl = example.AudioUrl
+        };
+    }
+
+    public async Task<CardExampleDTO> UpdateExampleAsync(int userId, int cardId, int exampleId, UpdateExampleRequest request)
+    {
+        var card = await _unitOfWork.Cards.GetByIdWithDetailsAsync(cardId);
+        if (card == null)
+            throw new ApplicationException(MessageConstant.CardMessage.CARD_NOT_FOUND);
+
+        var deck = await _unitOfWork.Decks.GetByIdAsync(card.DeckId);
+        if (deck == null || deck.UserId != userId)
+            throw new ApplicationException(MessageConstant.DeckMessage.DECK_PERMISSION_DENIED);
+
+        var example = card.Examples.FirstOrDefault(e => e.Id == exampleId);
+        if (example == null)
+            throw new ApplicationException(MessageConstant.CardMessage.EXAMPLE_NOT_FOUND);
+
+        // Update only provided fields
+        if (request.SentenceJapanese != null) example.SentenceJapanese = request.SentenceJapanese;
+        if (request.SentenceMeaning != null) example.SentenceMeaning = request.SentenceMeaning;
+        if (request.ClozePart != null) example.ClozePart = request.ClozePart;
+        if (request.AlternativeAnswers != null) example.AlternativeAnswers = request.AlternativeAnswers;
+        if (request.AudioUrl != null) example.AudioUrl = request.AudioUrl;
+
+        _unitOfWork.CardExamples.UpdateAsync(example);
+        await _unitOfWork.SaveChangesAsync();
+
+        return new CardExampleDTO
+        {
+            Id = example.Id,
+            SentenceJapanese = example.SentenceJapanese,
+            SentenceMeaning = example.SentenceMeaning,
+            ClozePart = example.ClozePart,
+            AlternativeAnswers = example.AlternativeAnswers,
+            AudioUrl = example.AudioUrl
+        };
+    }
+
+    public async Task<bool> DeleteExampleAsync(int userId, int cardId, int exampleId)
+    {
+        var card = await _unitOfWork.Cards.GetByIdWithDetailsAsync(cardId);
+        if (card == null)
+            throw new ApplicationException(MessageConstant.CardMessage.CARD_NOT_FOUND);
+
+        var deck = await _unitOfWork.Decks.GetByIdAsync(card.DeckId);
+        if (deck == null || deck.UserId != userId)
+            throw new ApplicationException(MessageConstant.DeckMessage.DECK_PERMISSION_DENIED);
+
+        var example = card.Examples.FirstOrDefault(e => e.Id == exampleId);
+        if (example == null)
+            throw new ApplicationException(MessageConstant.CardMessage.EXAMPLE_NOT_FOUND);
+
+        _unitOfWork.CardExamples.DeleteAsync(example);
+        await _unitOfWork.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<GrammarDetailsDTO> UpdateGrammarAsync(int userId, int cardId, UpdateGrammarRequest request)
+    {
+        var card = await _unitOfWork.Cards.GetByIdWithDetailsAsync(cardId);
+        if (card == null)
+            throw new ApplicationException(MessageConstant.CardMessage.CARD_NOT_FOUND);
+
+        var deck = await _unitOfWork.Decks.GetByIdAsync(card.DeckId);
+        if (deck == null || deck.UserId != userId)
+            throw new ApplicationException(MessageConstant.DeckMessage.DECK_PERMISSION_DENIED);
+
+        if (card.Type != CardType.Grammar)
+            throw new ApplicationException(MessageConstant.CardMessage.CARD_TYPE_MISMATCH);
+
+        // Create or update grammar details
+        if (card.GrammarDetails == null)
+        {
+            var newGrammar = new GrammarDetails
+            {
+                CardId = cardId,
+                Structure = request.Structure,
+                Explanation = request.Explanation,
+                Caution = request.Caution,
+                Level = Enum.TryParse<Level>(request.Level, true, out var level) ? level : Level.N5
+            };
+            await _unitOfWork.GrammarDetails.AddAsync(newGrammar);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new GrammarDetailsDTO
+            {
+                Structure = newGrammar.Structure,
+                Explanation = newGrammar.Explanation,
+                Caution = newGrammar.Caution,
+                Level = newGrammar.Level.ToString()
+            };
+        }
+        else
+        {
+            // Update existing
+            if (request.Structure != null) card.GrammarDetails.Structure = request.Structure;
+            if (request.Explanation != null) card.GrammarDetails.Explanation = request.Explanation;
+            if (request.Caution != null) card.GrammarDetails.Caution = request.Caution;
+            if (request.Level != null && Enum.TryParse<Level>(request.Level, true, out var level))
+                card.GrammarDetails.Level = level;
+
+            _unitOfWork.GrammarDetails.UpdateAsync(card.GrammarDetails);
+            await _unitOfWork.SaveChangesAsync();
+
+            return new GrammarDetailsDTO
+            {
+                Structure = card.GrammarDetails.Structure,
+                Explanation = card.GrammarDetails.Explanation,
+                Caution = card.GrammarDetails.Caution,
+                Level = card.GrammarDetails.Level.ToString()
+            };
+        }
+    }
 }

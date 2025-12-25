@@ -48,5 +48,6 @@ public static class MessageConstant
         public const string CARD_INVALID_TYPE = "Card_Invalid_Type_400";
         public const string CARD_PERMISSION_DENIED = "Card_Permission_Denied_403";
         public const string CARD_TYPE_MISMATCH = "Card_Type_Mismatch_400"; // Card type phải trùng với deck type
+        public const string EXAMPLE_NOT_FOUND = "Example_Not_Found_404";
     }
 }
