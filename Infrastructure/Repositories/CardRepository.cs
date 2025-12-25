@@ -30,4 +30,22 @@ public class CardRepository : Repository<Card>, ICardRepository
             .Include(c => c.GrammarDetails)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<Card>> GetByDeckIdAsync(int deckId)
+    {
+        return await _context.Cards
+            .Where(c => c.DeckId == deckId)
+            .Include(c => c.Examples)
+            .Include(c => c.GrammarDetails)
+            .AsNoTracking()
+            .ToListAsync();
+    }
+
+    public async Task<Card?> GetByIdWithDetailsAsync(int cardId)
+    {
+        return await _context.Cards
+            .Include(c => c.Examples)
+            .Include(c => c.GrammarDetails)
+            .FirstOrDefaultAsync(c => c.Id == cardId);
+    }
 }

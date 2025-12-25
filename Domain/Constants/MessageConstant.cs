@@ -41,4 +41,12 @@ public static class MessageConstant
         public const string DECK_NOT_FOUND = "Deck_Not_Found_404"; // Deck không tồn tại
         public const string DECK_PERMISSION_DENIED = "Deck_Permission_Denied_403"; // Không có quyền sửa deck này
     }
+
+    public static class CardMessage
+    {
+        public const string CARD_NOT_FOUND = "Card_Not_Found_404";
+        public const string CARD_INVALID_TYPE = "Card_Invalid_Type_400";
+        public const string CARD_PERMISSION_DENIED = "Card_Permission_Denied_403";
+        public const string CARD_TYPE_MISMATCH = "Card_Type_Mismatch_400"; // Card type phải trùng với deck type
+    }
 }

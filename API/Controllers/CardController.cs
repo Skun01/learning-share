@@ -1,0 +1,85 @@
+using Application.Common;
+using Application.DTOs.Card;
+using Application.IServices;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace API.Controllers;
+
+[ApiController]
+[Route("api/decks/{deckId}/cards")]
+[Authorize]
+public class CardController : BaseController
+{
+    private readonly ICardService _service;
+
+    public CardController(ICardService service)
+    {
+        _service = service;
+    }
+
+    /// <summary>
+    /// Lấy danh sách cards trong deck
+    /// </summary>
+    /// <param name="deckId"></param>
+    /// <returns></returns>
+    [HttpGet]
+    public async Task<ApiResponse<IEnumerable<CardSummaryDTO>>> GetCardsAsync(int deckId)
+    {
+        var result = await HandleException(_service.GetCardsByDeckIdAsync(GetCurrentUserId(), deckId));
+        return result;
+    }
+
+    /// <summary>
+    /// Lấy chi tiết card
+    /// </summary>
+    /// <param name="deckId"></param>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpGet("{id}")]
+    public async Task<ApiResponse<CardDetailDTO>> GetCardByIdAsync(int deckId, int id)
+    {
+        var result = await HandleException(_service.GetCardByIdAsync(GetCurrentUserId(), deckId, id));
+        return result;
+    }
+
+    /// <summary>
+    /// Tạo card mới
+    /// </summary>
+    /// <param name="deckId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    public async Task<ApiResponse<CardDetailDTO>> CreateCardAsync(int deckId, [FromBody] CreateCardRequest request)
+    {
+        var result = await HandleException(_service.CreateCardAsync(GetCurrentUserId(), deckId, request));
+        return result;
+    }
+
+    /// <summary>
+    /// Cập nhật card
+    /// </summary>
+    /// <param name="deckId"></param>
+    /// <param name="id"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPut("{id}")]
+    public async Task<ApiResponse<CardDetailDTO>> UpdateCardAsync(int deckId, int id, [FromBody] UpdateCardRequest request)
+    {
+        var result = await HandleException(_service.UpdateCardAsync(GetCurrentUserId(), deckId, id, request));
+        return result;
+    }
+
+    /// <summary>
+    /// Xóa card
+    /// </summary>
+    /// <param name="deckId"></param>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpDelete("{id}")]
+    public async Task<ApiResponse<bool>> DeleteCardAsync(int deckId, int id)
+    {
+        var result = await HandleException(_service.DeleteCardAsync(GetCurrentUserId(), deckId, id));
+        return result;
+    }
+}

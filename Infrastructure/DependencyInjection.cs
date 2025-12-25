@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.AddScoped<IUserSettingsService, UserSettingsService>();
         services.AddScoped<IDeckService, DeckService>();
         services.AddScoped<IStoreService, StoreService>();
+        services.AddScoped<ICardService, CardService>();
 
         // internal services
         services.AddScoped<ITokenService, TokenService>();
