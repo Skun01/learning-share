@@ -58,7 +58,7 @@ public class DeckService : IDeckService
                 {
                     Id = user!.Id,
                     Name = user.Username,
-                    AvatarUrl = user.AvatarUrl
+                    AvatarUrl = user.AvatarMedia != null ? "/" + user.AvatarMedia.FilePath : null
                 },
                 Stats = new DeckStatsDTO
                 {

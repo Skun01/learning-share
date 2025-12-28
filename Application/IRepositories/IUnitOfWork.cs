@@ -12,5 +12,6 @@ public interface IUnitOfWork : IDisposable
     ICardRepository Cards { get; }
     ICardExampleRepository CardExamples { get; }
     IGrammarDetailsRepository GrammarDetails { get; }
+    IRepository<MediaFile> MediaFiles { get; }
     Task<int> SaveChangesAsync();
 }

@@ -32,9 +32,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(20)
             .HasConversion<string>();
 
-        builder.Property(u => u.AvatarUrl)
-            .HasMaxLength(255);
-
         builder.Property(u => u.IsActive)
             .HasDefaultValue(true);
 
@@ -45,5 +42,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .WithOne(s => s.User)
             .HasForeignKey<UserSettings>(s => s.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Avatar FK relationship
+        builder.HasOne(u => u.AvatarMedia)
+            .WithMany(m => m.Avatars)
+            .HasForeignKey(u => u.AvatarMediaId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

@@ -1,5 +1,6 @@
 using Application.Common;
 using Application.DTOs.Card;
+using Application.DTOs.Common;
 using Application.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,14 +20,28 @@ public class CardController : BaseController
     }
 
     /// <summary>
-    /// Lấy danh sách cards trong deck
+    /// Lấy danh sách cards trong deck (với pagination và filter)
     /// </summary>
     /// <param name="deckId"></param>
+    /// <param name="request"></param>
     /// <returns></returns>
     [HttpGet]
-    public async Task<ApiResponse<IEnumerable<CardSummaryDTO>>> GetCardsAsync(int deckId)
+    public async Task<ApiResponse<IEnumerable<CardSummaryDTO>>> GetCardsAsync(int deckId, [FromQuery] GetCardsRequest request)
     {
-        var result = await HandleException(_service.GetCardsByDeckIdAsync(GetCurrentUserId(), deckId));
+        var requestModel = new QueryDTO<GetCardsRequest>
+        {
+            UserId = GetCurrentUserId(),
+            Query = request
+        };
+
+        var result = await HandleException(_service.GetCardsWithFilterAsync(deckId, requestModel));
+        result.MetaData = new MetaData
+        {
+            Page = request.Page,
+            PageSize = request.PageSize,
+            Total = requestModel.Total
+        };
+
         return result;
     }
 
@@ -106,6 +121,19 @@ public class CardController : BaseController
     public async Task<ApiResponse<BulkDeleteCardsResponse>> BulkDeleteCardsAsync(int deckId, [FromBody] BulkDeleteCardsRequest request)
     {
         var result = await HandleException(_service.BulkDeleteCardsAsync(GetCurrentUserId(), deckId, request));
+        return result;
+    }
+
+    /// <summary>
+    /// Cập nhật nhiều cards cùng lúc
+    /// </summary>
+    /// <param name="deckId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPut("bulk")]
+    public async Task<ApiResponse<BulkUpdateCardsResponse>> BulkUpdateCardsAsync(int deckId, [FromBody] BulkUpdateCardsRequest request)
+    {
+        var result = await HandleException(_service.BulkUpdateCardsAsync(GetCurrentUserId(), deckId, request));
         return result;
     }
 }

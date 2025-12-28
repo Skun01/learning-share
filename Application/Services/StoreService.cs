@@ -65,7 +65,7 @@ public class StoreService : IStoreService
             {
                 Id = deck.User.Id,
                 Name = deck.User.Username,
-                AvatarUrl = deck.User.AvatarUrl
+                AvatarUrl = deck.User.AvatarMedia != null ? "/" + deck.User.AvatarMedia.FilePath : null
             },
             Tags = deck.DeckTags.Select(t => t.TagName).ToList(),
             TotalCards = deck.TotalCards,
@@ -88,7 +88,7 @@ public class StoreService : IStoreService
             {
                 Id = deck.User.Id,
                 Name = deck.User.Username,
-                AvatarUrl = deck.User.AvatarUrl
+                AvatarUrl = deck.User.AvatarMedia != null ? "/" + deck.User.AvatarMedia.FilePath : null
             },
             Tags = deck.DeckTags.Select(t => t.TagName).ToList(),
             TotalCards = deck.TotalCards,
@@ -111,7 +111,7 @@ public class StoreService : IStoreService
             {
                 Id = deck.User.Id,
                 Name = deck.User.Username,
-                AvatarUrl = deck.User.AvatarUrl
+                AvatarUrl = deck.User.AvatarMedia != null ? "/" + deck.User.AvatarMedia.FilePath : null
             },
             Tags = deck.DeckTags.Select(t => t.TagName).ToList(),
             TotalCards = deck.TotalCards,

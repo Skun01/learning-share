@@ -23,7 +23,7 @@ public static class UserMapping
             Username = user.Username,
             Email = user.Email,
             Role = user.Role,
-            AvatarUrl = user.AvatarUrl ?? string.Empty
+            AvatarUrl = user.AvatarMedia != null ? "/" + user.AvatarMedia.FilePath : string.Empty
         };
     }
 
@@ -35,7 +35,7 @@ public static class UserMapping
             Username = user.Username,
             Email = user.Email,
             Role = user.Role.ToString(),
-            AvatarUrl = user.AvatarUrl,
+            AvatarUrl = user.AvatarMedia != null ? "/" + user.AvatarMedia.FilePath : null,
             Settings = settings.ToDTO()
         };
     }

@@ -1,4 +1,5 @@
 using Application.DTOs.Card;
+using Application.DTOs.Common;
 using Application.IRepositories;
 using Application.IServices;
 using Domain.Constants;
@@ -34,7 +35,57 @@ public class CardService : ICardService
             Type = c.Type.ToString(),
             Term = c.Term,
             Meaning = c.Meaning,
-            ImageUrl = c.ImageUrl,
+            ImageMediaId = c.ImageMediaId,
+            ImageUrl = c.ImageMedia != null ? "/" + c.ImageMedia.FilePath : null,
+            HasExamples = c.Examples.Any(),
+            HasGrammarDetails = c.GrammarDetails != null
+        });
+    }
+
+    public async Task<IEnumerable<CardSummaryDTO>> GetCardsWithFilterAsync(int deckId, QueryDTO<GetCardsRequest> request)
+    {
+        var deck = await _unitOfWork.Decks.GetByIdAsync(deckId);
+        if (deck == null)
+            throw new ApplicationException(MessageConstant.DeckMessage.DECK_NOT_FOUND);
+        
+        if (deck.UserId != request.UserId && !deck.IsPublic)
+            throw new ApplicationException(MessageConstant.DeckMessage.DECK_PERMISSION_DENIED);
+
+        var allCards = await _unitOfWork.Cards.GetByDeckIdAsync(deckId);
+        var query = allCards.AsQueryable();
+
+        var filterRequest = request.Query;
+
+        // Filter by type
+        if (filterRequest != null && !string.IsNullOrEmpty(filterRequest.Type) && Enum.TryParse<CardType>(filterRequest.Type, true, out var cardType))
+        {
+            query = query.Where(c => c.Type == cardType);
+        }
+
+        // Search by keyword (term or meaning)
+        if (filterRequest != null && !string.IsNullOrEmpty(filterRequest.Keyword))
+        {
+            var keyword = filterRequest.Keyword.ToLower();
+            query = query.Where(c => c.Term.ToLower().Contains(keyword) || 
+                                     c.Meaning.ToLower().Contains(keyword));
+        }
+
+        // Set total for metadata
+        request.Total = query.Count();
+
+        // Pagination
+        var page = filterRequest?.Page > 0 ? filterRequest.Page : 1;
+        var pageSize = filterRequest?.PageSize > 0 ? filterRequest.PageSize : 20;
+        var cards = query.Skip((page - 1) * pageSize).Take(pageSize);
+
+        return cards.Select(c => new CardSummaryDTO
+        {
+            Id = c.Id,
+            Type = c.Type.ToString(),
+            Term = c.Term,
+            Meaning = c.Meaning,
+            ImageMediaId = c.ImageMediaId,
+            ImageUrl = c.ImageMedia != null ? "/" + c.ImageMedia.FilePath : null,
             HasExamples = c.Examples.Any(),
             HasGrammarDetails = c.GrammarDetails != null
         });
@@ -82,7 +133,7 @@ public class CardService : ICardService
             Term = request.Term,
             Meaning = request.Meaning,
             Synonyms = request.Synonyms,
-            ImageUrl = request.ImageUrl,
+            ImageMediaId = request.ImageMediaId,
             Note = request.Note
         };
 
@@ -118,7 +169,7 @@ public class CardService : ICardService
                     SentenceMeaning = ex.SentenceMeaning,
                     ClozePart = ex.ClozePart,
                     AlternativeAnswers = ex.AlternativeAnswers,
-                    AudioUrl = ex.AudioUrl
+                    AudioMediaId = ex.AudioMediaId
                 };
                 await _unitOfWork.CardExamples.AddAsync(example);
             }
@@ -157,8 +208,8 @@ public class CardService : ICardService
             card.Meaning = request.Meaning;
         if (request.Synonyms != null)
             card.Synonyms = request.Synonyms;
-        if (request.ImageUrl != null)
-            card.ImageUrl = request.ImageUrl;
+        if (request.ImageMediaId.HasValue)
+            card.ImageMediaId = request.ImageMediaId;
         if (request.Note != null)
             card.Note = request.Note;
 
@@ -216,7 +267,8 @@ public class CardService : ICardService
             Term = card.Term,
             Meaning = card.Meaning,
             Synonyms = card.Synonyms,
-            ImageUrl = card.ImageUrl,
+            ImageMediaId = card.ImageMediaId,
+            ImageUrl = card.ImageMedia != null ? "/" + card.ImageMedia.FilePath : null,
             Note = card.Note,
             GrammarDetails = card.GrammarDetails != null ? new GrammarDetailsDTO
             {
@@ -232,7 +284,8 @@ public class CardService : ICardService
                 SentenceMeaning = e.SentenceMeaning,
                 ClozePart = e.ClozePart,
                 AlternativeAnswers = e.AlternativeAnswers,
-                AudioUrl = e.AudioUrl
+                AudioMediaId = e.AudioMediaId,
+                AudioUrl = e.AudioMedia != null ? "/" + e.AudioMedia.FilePath : null
             }).ToList()
         };
     }
@@ -282,7 +335,7 @@ public class CardService : ICardService
                 Term = cardRequest.Term,
                 Meaning = cardRequest.Meaning,
                 Synonyms = cardRequest.Synonyms,
-                ImageUrl = cardRequest.ImageUrl,
+                ImageMediaId = cardRequest.ImageMediaId,
                 Note = cardRequest.Note
             };
 
@@ -318,7 +371,7 @@ public class CardService : ICardService
                         SentenceMeaning = ex.SentenceMeaning,
                         ClozePart = ex.ClozePart,
                         AlternativeAnswers = ex.AlternativeAnswers,
-                        AudioUrl = ex.AudioUrl
+                        AudioMediaId = ex.AudioMediaId
                     };
                     await _unitOfWork.CardExamples.AddAsync(example);
                 }
@@ -394,6 +447,51 @@ public class CardService : ICardService
         return response;
     }
 
+    public async Task<BulkUpdateCardsResponse> BulkUpdateCardsAsync(int userId, int deckId, BulkUpdateCardsRequest request)
+    {
+        var deck = await _unitOfWork.Decks.GetByIdAsync(deckId);
+        if (deck == null)
+            throw new ApplicationException(MessageConstant.DeckMessage.DECK_NOT_FOUND);
+        
+        if (deck.UserId != userId)
+            throw new ApplicationException(MessageConstant.DeckMessage.DECK_PERMISSION_DENIED);
+
+        var response = new BulkUpdateCardsResponse
+        {
+            TotalRequested = request.Cards.Count,
+            UpdatedCards = new List<CardDetailDTO>(),
+            Errors = new List<BulkOperationError>()
+        };
+
+        for (int i = 0; i < request.Cards.Count; i++)
+        {
+            var item = request.Cards[i];
+            var card = await _unitOfWork.Cards.GetByIdWithDetailsAsync(item.Id);
+
+            if (card == null || card.DeckId != deckId)
+            {
+                response.Errors.Add(new BulkOperationError { Index = i, Message = $"Card {item.Id} not found" });
+                continue;
+            }
+
+            // Update only provided fields
+            if (item.Term != null) card.Term = item.Term;
+            if (item.Meaning != null) card.Meaning = item.Meaning;
+            if (item.Synonyms != null) card.Synonyms = item.Synonyms;
+            if (item.ImageMediaId.HasValue) card.ImageMediaId = item.ImageMediaId;
+            if (item.Note != null) card.Note = item.Note;
+
+            _unitOfWork.Cards.UpdateAsync(card);
+            response.UpdatedCards.Add(MapToDetailDTO(card));
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+        response.TotalUpdated = response.UpdatedCards.Count;
+        if (!response.Errors.Any()) response.Errors = null;
+
+        return response;
+    }
+
     public async Task<CardExampleDTO> AddExampleAsync(int userId, int cardId, CreateExampleRequest request)
     {
         var card = await _unitOfWork.Cards.GetByIdWithDetailsAsync(cardId);
@@ -411,11 +509,18 @@ public class CardService : ICardService
             SentenceMeaning = request.SentenceMeaning,
             ClozePart = request.ClozePart,
             AlternativeAnswers = request.AlternativeAnswers,
-            AudioUrl = request.AudioUrl
+            AudioMediaId = request.AudioMediaId
         };
 
         await _unitOfWork.CardExamples.AddAsync(example);
         await _unitOfWork.SaveChangesAsync();
+
+        // Load AudioMedia if exists
+        MediaFile? audioMedia = null;
+        if (example.AudioMediaId.HasValue)
+        {
+            audioMedia = await _unitOfWork.MediaFiles.GetByIdAsync(example.AudioMediaId.Value);
+        }
 
         return new CardExampleDTO
         {
@@ -424,7 +529,8 @@ public class CardService : ICardService
             SentenceMeaning = example.SentenceMeaning,
             ClozePart = example.ClozePart,
             AlternativeAnswers = example.AlternativeAnswers,
-            AudioUrl = example.AudioUrl
+            AudioMediaId = example.AudioMediaId,
+            AudioUrl = audioMedia != null ? "/" + audioMedia.FilePath : null
         };
     }
 
@@ -447,10 +553,17 @@ public class CardService : ICardService
         if (request.SentenceMeaning != null) example.SentenceMeaning = request.SentenceMeaning;
         if (request.ClozePart != null) example.ClozePart = request.ClozePart;
         if (request.AlternativeAnswers != null) example.AlternativeAnswers = request.AlternativeAnswers;
-        if (request.AudioUrl != null) example.AudioUrl = request.AudioUrl;
+        if (request.AudioMediaId.HasValue) example.AudioMediaId = request.AudioMediaId;
 
         _unitOfWork.CardExamples.UpdateAsync(example);
         await _unitOfWork.SaveChangesAsync();
+
+        // Load AudioMedia if exists
+        MediaFile? audioMedia = null;
+        if (example.AudioMediaId.HasValue)
+        {
+            audioMedia = await _unitOfWork.MediaFiles.GetByIdAsync(example.AudioMediaId.Value);
+        }
 
         return new CardExampleDTO
         {
@@ -459,7 +572,8 @@ public class CardService : ICardService
             SentenceMeaning = example.SentenceMeaning,
             ClozePart = example.ClozePart,
             AlternativeAnswers = example.AlternativeAnswers,
-            AudioUrl = example.AudioUrl
+            AudioMediaId = example.AudioMediaId,
+            AudioUrl = audioMedia != null ? "/" + audioMedia.FilePath : null
         };
     }
 

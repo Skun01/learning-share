@@ -1,8 +1,13 @@
 namespace Application.DTOs.Card;
 
-public class UpdateCardRequest
+public class BulkUpdateCardsRequest
 {
-    public string? Type { get; set; }
+    public List<UpdateCardItem> Cards { get; set; } = new();
+}
+
+public class UpdateCardItem
+{
+    public int Id { get; set; }
     public string? Term { get; set; }
     public string? Meaning { get; set; }
     public string? Synonyms { get; set; }

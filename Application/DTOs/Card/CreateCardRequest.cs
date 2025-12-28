@@ -14,7 +14,7 @@ public class CardExampleRequest
     public string SentenceMeaning { get; set; } = string.Empty;
     public string? ClozePart { get; set; }
     public string? AlternativeAnswers { get; set; }
-    public string? AudioUrl { get; set; }
+    public int? AudioMediaId { get; set; }
 }
 
 public class CreateCardRequest
@@ -23,7 +23,7 @@ public class CreateCardRequest
     public string Term { get; set; } = string.Empty;
     public string Meaning { get; set; } = string.Empty;
     public string? Synonyms { get; set; }
-    public string? ImageUrl { get; set; }
+    public int? ImageMediaId { get; set; }
     public string? Note { get; set; }
     public GrammarDetailsRequest? GrammarDetails { get; set; }
     public List<CardExampleRequest>? Examples { get; set; }

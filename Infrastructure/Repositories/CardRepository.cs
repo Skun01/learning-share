@@ -27,7 +27,9 @@ public class CardRepository : Repository<Card>, ICardRepository
         return await _context.Cards
             .Where(c => c.DeckId == deckId)
             .Include(c => c.Examples)
+                .ThenInclude(e => e.AudioMedia)
             .Include(c => c.GrammarDetails)
+            .Include(c => c.ImageMedia)
             .ToListAsync();
     }
 
@@ -36,7 +38,9 @@ public class CardRepository : Repository<Card>, ICardRepository
         return await _context.Cards
             .Where(c => c.DeckId == deckId)
             .Include(c => c.Examples)
+                .ThenInclude(e => e.AudioMedia)
             .Include(c => c.GrammarDetails)
+            .Include(c => c.ImageMedia)
             .AsNoTracking()
             .ToListAsync();
     }
@@ -45,7 +49,9 @@ public class CardRepository : Repository<Card>, ICardRepository
     {
         return await _context.Cards
             .Include(c => c.Examples)
+                .ThenInclude(e => e.AudioMedia)
             .Include(c => c.GrammarDetails)
+            .Include(c => c.ImageMedia)
             .FirstOrDefaultAsync(c => c.Id == cardId);
     }
 }

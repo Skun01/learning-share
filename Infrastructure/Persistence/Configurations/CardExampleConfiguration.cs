@@ -25,13 +25,16 @@ public class CardExampleConfiguration : IEntityTypeConfiguration<CardExample>
         builder.Property(ce => ce.AlternativeAnswers)
             .HasMaxLength(200);
 
-        builder.Property(ce => ce.AudioUrl)
-            .HasMaxLength(255);
-
         // Quan hệ với Card
         builder.HasOne(ce => ce.Card)
             .WithMany(c => c.Examples)
             .HasForeignKey(ce => ce.CardId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // AudioMedia FK relationship
+        builder.HasOne(ce => ce.AudioMedia)
+            .WithMany(m => m.CardExamples)
+            .HasForeignKey(ce => ce.AudioMediaId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

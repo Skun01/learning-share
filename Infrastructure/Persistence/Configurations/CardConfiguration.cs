@@ -26,9 +26,6 @@ public class CardConfiguration : IEntityTypeConfiguration<Card>
         builder.Property(c => c.Synonyms)
             .HasMaxLength(500);
 
-        builder.Property(c => c.ImageUrl)
-            .HasMaxLength(500);
-
         // Quan hệ với Deck
         builder.HasOne(c => c.Deck)
             .WithMany(d => d.Cards)
@@ -40,5 +37,11 @@ public class CardConfiguration : IEntityTypeConfiguration<Card>
             .WithOne(g => g.Card)
             .HasForeignKey<GrammarDetails>(g => g.CardId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // ImageMedia FK relationship
+        builder.HasOne(c => c.ImageMedia)
+            .WithMany(m => m.Cards)
+            .HasForeignKey(c => c.ImageMediaId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

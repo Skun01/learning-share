@@ -17,4 +17,11 @@ public class UserRepository : Repository<User>, IUserRepository
     {
         return await _context.Users.FirstOrDefaultAsync(u => u.PasswordResetToken == token);
     }
+
+    public async Task<User?> GetByIdWithAvatarAsync(int userId)
+    {
+        return await _context.Users
+            .Include(u => u.AvatarMedia)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+    }
 }

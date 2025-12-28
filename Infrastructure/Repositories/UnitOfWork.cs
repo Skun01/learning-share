@@ -14,6 +14,7 @@ public class UnitOfWork : IUnitOfWork
     public ICardRepository Cards { get; private set;}
     public ICardExampleRepository CardExamples { get; private set; }
     public IGrammarDetailsRepository GrammarDetails { get; private set; }
+    public IRepository<MediaFile> MediaFiles { get; private set; }
 
     private readonly AppDbContext _context;
     public UnitOfWork(AppDbContext context)
@@ -27,6 +28,7 @@ public class UnitOfWork : IUnitOfWork
         Cards = new CardRepository(_context);
         CardExamples = new CardExampleRepository(_context);
         GrammarDetails = new GrammarDetailsRepository(_context);
+        MediaFiles = new Repository<MediaFile>(_context);
     }
 
     public void Dispose()

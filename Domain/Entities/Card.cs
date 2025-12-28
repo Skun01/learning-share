@@ -10,10 +10,11 @@ public class Card : BaseEntity
     public string Term { get; set; } = string.Empty; // Từ vựng / Cấu trúc
     public string Meaning { get; set; } = string.Empty; // Nghĩa
     public string? Synonyms { get; set; }
-    public string? ImageUrl { get; set; }
+    public int? ImageMediaId { get; set; }
     public string? Note { get; set; }
 
     public Deck Deck { get; set; } = null!;
+    public MediaFile? ImageMedia { get; set; }
     public GrammarDetails? GrammarDetails { get; set; }
     public ICollection<CardExample> Examples { get; set; } = [];
 }

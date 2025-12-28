@@ -9,8 +9,9 @@ public class CardExample : BaseEntity
     public string SentenceMeaning { get; set; } = string.Empty;
     public string? ClozePart { get; set; } // phần bị che đi
     public string? AlternativeAnswers { get; set; } // các đáp án chấp nhận khác
-    public string? AudioUrl { get; set; }
+    public int? AudioMediaId { get; set; }
 
     // Navigation
     public Card Card { get; set; } = null!;
+    public MediaFile? AudioMedia { get; set; }
 }
