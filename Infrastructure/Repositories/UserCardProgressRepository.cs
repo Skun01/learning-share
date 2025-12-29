@@ -33,6 +33,8 @@ public class UserCardProgressRepository : Repository<UserCardProgress>, IUserCar
         var now = DateTime.UtcNow;
         var query = _context.UserCardProgresses
             .Include(ucp => ucp.Card)
+                .ThenInclude(c => c.Deck)
+            .Include(ucp => ucp.Card)
                 .ThenInclude(c => c.Examples)
                     .ThenInclude(e => e.AudioMedia)
             .Include(ucp => ucp.Card)

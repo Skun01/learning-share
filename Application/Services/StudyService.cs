@@ -65,11 +65,9 @@ public class StudyService : IStudyService
         return newCards.Select(c => c.ToStudyCardDTO());
     }
 
-    public async Task<SubmitReviewResponse> SubmitReviewAsync(RequestDTO<SubmitReviewRequest> request)
+    public async Task<SubmitReviewResponse> SubmitReviewAsync(int userId, int cardId, SubmitReviewRequest request)
     {
-        var userId = request.UserId;
-        var cardId = request.Request!.CardId;
-        var isCorrect = request.Request.IsCorrect;
+        var isCorrect = request.IsCorrect;
 
         var card = await _unitOfWork.Cards.GetByIdAsync(cardId);
         if (card == null)

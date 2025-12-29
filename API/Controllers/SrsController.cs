@@ -70,13 +70,6 @@ public class SrsController : BaseController
     [HttpPost("reviews/{cardId}/submit")]
     public async Task<ApiResponse<SubmitReviewResponse>> SubmitReviewAsync(int cardId, [FromBody] SubmitReviewRequest request)
     {
-        request.CardId = cardId;
-        var requestModel = new RequestDTO<SubmitReviewRequest>
-        {
-            UserId = GetCurrentUserId(),
-            Request = request
-        };
-
-        return await HandleException(_studyService.SubmitReviewAsync(requestModel));
+        return await HandleException(_studyService.SubmitReviewAsync(GetCurrentUserId(), cardId, request));
     }
 }
