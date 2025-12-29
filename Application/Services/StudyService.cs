@@ -163,4 +163,84 @@ public class StudyService : IStudyService
             Message = message
         };
     }
+
+    public async Task<IEnumerable<HeatmapDataDTO>> GetHeatmapAsync(QueryDTO<GetHeatmapRequest> request)
+    {
+        var userId = request.UserId;
+        var year = request.Query?.Year ?? DateTime.UtcNow.Year;
+
+        var startDate = new DateTime(year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var endDate = new DateTime(year, 12, 31, 23, 59, 59, DateTimeKind.Utc);
+
+        var logs = await _unitOfWork.StudyLogs.GetByDateRangeAsync(userId, startDate, endDate);
+
+        var heatmapData = logs
+            .GroupBy(l => l.ReviewDate.Date)
+            .Select(g => new HeatmapDataDTO
+            {
+                Date = g.Key.ToString("yyyy-MM-dd"),
+                Count = g.Count()
+            })
+            .OrderBy(h => h.Date)
+            .ToList();
+
+        return heatmapData;
+    }
+
+    public async Task<IEnumerable<ForecastDTO>> GetForecastAsync(QueryDTO<GetForecastRequest> request)
+    {
+        var userId = request.UserId;
+        var days = request.Query?.Days ?? 7;
+
+        var now = DateTime.UtcNow.Date;
+        var endDate = now.AddDays(days);
+
+        var progresses = await _unitOfWork.UserCardProgresses.GetByUserId(userId);
+
+        var forecast = progresses
+            .Where(p => p.NextReviewDate.HasValue 
+                && p.NextReviewDate.Value.Date >= now 
+                && p.NextReviewDate.Value.Date <= endDate)
+            .GroupBy(p => p.NextReviewDate!.Value.Date)
+            .Select(g => new ForecastDTO
+            {
+                Date = g.Key.ToString("yyyy-MM-dd"),
+                Count = g.Count()
+            })
+            .OrderBy(f => f.Date)
+            .ToList();
+
+        return forecast;
+    }
+
+    public async Task<AccuracyDTO> GetAccuracyAsync(QueryDTO<GetAccuracyRequest> request)
+    {
+        var userId = request.UserId;
+        var period = request.Query?.Period?.ToLower() ?? "week";
+
+        DateTime startDate = period switch
+        {
+            "day" => DateTime.UtcNow.AddDays(-1),
+            "week" => DateTime.UtcNow.AddDays(-7),
+            "month" => DateTime.UtcNow.AddMonths(-1),
+            "year" => DateTime.UtcNow.AddYears(-1),
+            _ => DateTime.UtcNow.AddDays(-7)
+        };
+
+        var logs = await _unitOfWork.StudyLogs.GetByDateRangeAsync(userId, startDate, DateTime.UtcNow);
+        var logList = logs.ToList();
+
+        var correct = logList.Count(l => l.IsCorrect);
+        var incorrect = logList.Count(l => !l.IsCorrect);
+        var total = logList.Count;
+        var rate = total > 0 ? (double)correct / total : 0;
+
+        return new AccuracyDTO
+        {
+            Correct = correct,
+            Incorrect = incorrect,
+            Total = total,
+            Rate = Math.Round(rate, 4)
+        };
+    }
 }

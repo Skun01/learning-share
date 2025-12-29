@@ -9,4 +9,8 @@ public interface IStudyService
     Task<IEnumerable<StudyCardDTO>> GetAvailableReviewsAsync(QueryDTO<GetAvailableReviewsRequest> request);
     Task<IEnumerable<StudyCardDTO>> GetNewLessonsAsync(QueryDTO<GetNewLessonsRequest> request);
     Task<SubmitReviewResponse> SubmitReviewAsync(RequestDTO<SubmitReviewRequest> request);
+    
+    Task<IEnumerable<HeatmapDataDTO>> GetHeatmapAsync(QueryDTO<GetHeatmapRequest> request);
+    Task<IEnumerable<ForecastDTO>> GetForecastAsync(QueryDTO<GetForecastRequest> request);
+    Task<AccuracyDTO> GetAccuracyAsync(QueryDTO<GetAccuracyRequest> request);
 }
