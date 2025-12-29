@@ -1,3 +1,5 @@
+using Application.DTOs.Common;
+using Application.DTOs.Study;
 using Application.IRepositories;
 using Domain.Entities;
 using Infrastructure.Persistence;
@@ -53,5 +55,30 @@ public class CardRepository : Repository<Card>, ICardRepository
             .Include(c => c.GrammarDetails)
             .Include(c => c.ImageMedia)
             .FirstOrDefaultAsync(c => c.Id == cardId);
+    }
+
+    public async Task<IEnumerable<Card>> GetNewCardsAsync(QueryDTO<GetNewLessonsRequest> request)
+    {
+        var userId = request.UserId;
+        var deckId = request.Query!.DeckId;
+        var limit = request.Query.Limit;
+
+        // Lấy cardIds đã học bởi user này
+        var learnedCardIds = _context.UserCardProgresses
+            .Where(ucp => ucp.UserId == userId && ucp.Card.DeckId == deckId)
+            .Select(ucp => ucp.CardId);
+
+        // Query cards mới chưa học
+        var query = _context.Cards
+            .Where(c => c.DeckId == deckId && !learnedCardIds.Contains(c.Id))
+            .Include(c => c.Deck)
+            .Include(c => c.Examples)
+                .ThenInclude(e => e.AudioMedia)
+            .Include(c => c.GrammarDetails)
+            .Include(c => c.ImageMedia)
+            .AsNoTracking()
+            .Take(limit);
+
+        return await query.ToListAsync();
     }
 }

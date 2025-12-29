@@ -1,3 +1,5 @@
+using Application.DTOs.Common;
+using Application.DTOs.Study;
 using Domain.Entities;
 
 namespace Application.IRepositories;
@@ -9,4 +11,5 @@ public interface ICardRepository : IRepository<Card>
     Task<IEnumerable<Card>> GetCardsByDeckIdWithDetailsAsync(int deckId);
     Task<IEnumerable<Card>> GetByDeckIdAsync(int deckId);
     Task<Card?> GetByIdWithDetailsAsync(int cardId);
+    Task<IEnumerable<Card>> GetNewCardsAsync(QueryDTO<GetNewLessonsRequest> request);
 }

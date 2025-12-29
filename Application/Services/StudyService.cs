@@ -1,8 +1,8 @@
-using Application.DTOs.Card;
 using Application.DTOs.Common;
 using Application.DTOs.Study;
 using Application.IRepositories;
 using Application.IServices;
+using Application.Mappings;
 
 namespace Application.Services;
 
@@ -53,45 +53,12 @@ public class StudyService : IStudyService
 
         var dueProgress = await _unitOfWork.UserCardProgresses.GetDueReviewsAsync(userId, deckId, limit);
 
-        return dueProgress.Select(p => MapToStudyCardDTO(p));
+        return dueProgress.Select(p => p.ToStudyCardDTO());
     }
 
-    private StudyCardDTO MapToStudyCardDTO(Domain.Entities.UserCardProgress progress)
+    public async Task<IEnumerable<StudyCardDTO>> GetNewLessonsAsync(QueryDTO<GetNewLessonsRequest> request)
     {
-        var card = progress.Card;
-        return new StudyCardDTO
-        {
-            CardId = card.Id,
-            DeckId = card.DeckId,
-            DeckName = card.Deck?.Name ?? string.Empty,
-            Type = card.Type.ToString(),
-            Term = card.Term,
-            Meaning = card.Meaning,
-            Synonyms = card.Synonyms,
-            ImageMediaId = card.ImageMediaId,
-            ImageUrl = card.ImageMedia != null ? "/" + card.ImageMedia.FilePath : null,
-            Note = card.Note,
-            SRSLevel = (int)progress.SRSLevel,
-            GhostLevel = progress.GhostLevel,
-            Streak = progress.Streak,
-            LastReviewedDate = progress.LastReviewedDate,
-            GrammarDetails = card.GrammarDetails != null ? new GrammarDetailsDTO
-            {
-                Structure = card.GrammarDetails.Structure,
-                Explanation = card.GrammarDetails.Explanation,
-                Caution = card.GrammarDetails.Caution,
-                Level = card.GrammarDetails.Level.ToString()
-            } : null,
-            Examples = card.Examples.Select(e => new CardExampleDTO
-            {
-                Id = e.Id,
-                SentenceJapanese = e.SentenceJapanese,
-                SentenceMeaning = e.SentenceMeaning,
-                ClozePart = e.ClozePart,
-                AlternativeAnswers = e.AlternativeAnswers,
-                AudioMediaId = e.AudioMediaId,
-                AudioUrl = e.AudioMedia != null ? "/" + e.AudioMedia.FilePath : null
-            }).ToList()
-        };
+        var newCards = await _unitOfWork.Cards.GetNewCardsAsync(request);
+        return newCards.Select(c => c.ToStudyCardDTO());
     }
 }

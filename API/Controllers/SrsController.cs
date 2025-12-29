@@ -48,4 +48,19 @@ public class SrsController : BaseController
 
         return await HandleException(_studyService.GetAvailableReviewsAsync(requestModel));
     }
+
+    /// <summary>
+    /// Lấy danh sách thẻ mới chưa học trong deck
+    /// </summary>
+    [HttpGet("lessons/new")]
+    public async Task<ApiResponse<IEnumerable<StudyCardDTO>>> GetNewLessonsAsync([FromQuery] GetNewLessonsRequest request)
+    {
+        var requestModel = new QueryDTO<GetNewLessonsRequest>
+        {
+            UserId = GetCurrentUserId(),
+            Query = request
+        };
+
+        return await HandleException(_studyService.GetNewLessonsAsync(requestModel));
+    }
 }
