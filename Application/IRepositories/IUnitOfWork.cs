@@ -13,5 +13,6 @@ public interface IUnitOfWork : IDisposable
     ICardExampleRepository CardExamples { get; }
     IGrammarDetailsRepository GrammarDetails { get; }
     IRepository<MediaFile> MediaFiles { get; }
+    IStudyLogRepository StudyLogs { get; }
     Task<int> SaveChangesAsync();
 }
