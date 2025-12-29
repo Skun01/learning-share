@@ -3,6 +3,9 @@ using Application.DTOs.Study;
 using Application.IRepositories;
 using Application.IServices;
 using Application.Mappings;
+using Domain.Constants;
+using Domain.Entities;
+using Domain.Enums;
 
 namespace Application.Services;
 
@@ -60,5 +63,104 @@ public class StudyService : IStudyService
     {
         var newCards = await _unitOfWork.Cards.GetNewCardsAsync(request);
         return newCards.Select(c => c.ToStudyCardDTO());
+    }
+
+    public async Task<SubmitReviewResponse> SubmitReviewAsync(RequestDTO<SubmitReviewRequest> request)
+    {
+        var userId = request.UserId;
+        var cardId = request.Request!.CardId;
+        var isCorrect = request.Request.IsCorrect;
+
+        var card = await _unitOfWork.Cards.GetByIdAsync(cardId);
+        if (card == null)
+            throw new ApplicationException(MessageConstant.SrsMessage.CARD_NOT_FOUND);
+
+        var deck = await _unitOfWork.Decks.GetByIdAsync(card.DeckId);
+        if (deck == null || deck.UserId != userId)
+            throw new ApplicationException(MessageConstant.SrsMessage.DECK_PERMISSION_DENIED);
+
+        var progress = await _unitOfWork.UserCardProgresses.GetByUserAndCardAsync(userId, cardId);
+        bool isNewCard = progress == null;
+
+        if (isNewCard)
+        {
+            progress = new UserCardProgress
+            {
+                UserId = userId,
+                CardId = cardId,
+                SRSLevel = SRSLevel.New,
+                GhostLevel = 0,
+                Streak = 0
+            };
+            await _unitOfWork.UserCardProgresses.AddAsync(progress);
+        }
+
+        var oldLevel = (int)progress!.SRSLevel;
+        SRSLevel newLevel;
+        DateTime nextReviewDate;
+        string message;
+
+        if (isCorrect)
+        {
+            newLevel = progress.SRSLevel < SRSLevel.Burned 
+                ? (SRSLevel)((int)progress.SRSLevel + 1) 
+                : SRSLevel.Burned;
+            
+            nextReviewDate = SRSIntervals.GetNextReviewDate(newLevel);
+            
+            if (progress.GhostLevel > 0)
+                progress.GhostLevel--;
+            
+            progress.Streak++;
+            
+            message = newLevel == SRSLevel.Burned 
+                ? MessageConstant.SrsMessage.REVIEW_BURNED 
+                : MessageConstant.SrsMessage.REVIEW_CORRECT;
+        }
+        else
+        {
+            int calculatedLevel = Math.Max((int)progress.SRSLevel / 2, 1);
+            newLevel = (SRSLevel)calculatedLevel;
+            
+            nextReviewDate = DateTime.UtcNow.AddHours(1);
+            
+            var userSettings = await _unitOfWork.UserSettings.GetByUserIdAsync(userId);
+            if (userSettings?.EnableGhostMode == true)
+                progress.GhostLevel++;
+            
+            progress.Streak = 0;
+            
+            message = MessageConstant.SrsMessage.REVIEW_INCORRECT;
+        }
+
+        progress.SRSLevel = newLevel;
+        progress.NextReviewDate = nextReviewDate;
+        progress.LastReviewedDate = DateTime.UtcNow;
+
+        if (!isNewCard)
+            _unitOfWork.UserCardProgresses.UpdateAsync(progress);
+
+        var studyLog = new StudyLog
+        {
+            UserId = userId,
+            CardId = cardId,
+            ReviewDate = DateTime.UtcNow,
+            IsCorrect = isCorrect
+        };
+        await _unitOfWork.StudyLogs.AddAsync(studyLog);
+
+        await _unitOfWork.SaveChangesAsync();
+
+        return new SubmitReviewResponse
+        {
+            CardId = cardId,
+            OldLevel = oldLevel,
+            NewLevel = (int)newLevel,
+            NextReviewDate = nextReviewDate,
+            GhostLevel = progress.GhostLevel,
+            Streak = progress.Streak,
+            IsCorrect = isCorrect,
+            Message = message
+        };
     }
 }

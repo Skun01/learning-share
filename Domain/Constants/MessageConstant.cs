@@ -50,4 +50,13 @@ public static class MessageConstant
         public const string CARD_TYPE_MISMATCH = "Card_Type_Mismatch_400"; // Card type phải trùng với deck type
         public const string EXAMPLE_NOT_FOUND = "Example_Not_Found_404";
     }
+
+    public static class SrsMessage
+    {
+        public const string CARD_NOT_FOUND = "Srs_Card_Not_Found_404";
+        public const string DECK_PERMISSION_DENIED = "Srs_Deck_Permission_Denied_403";
+        public const string REVIEW_CORRECT = "Srs_Review_Correct_200";
+        public const string REVIEW_INCORRECT = "Srs_Review_Incorrect_200";
+        public const string REVIEW_BURNED = "Srs_Review_Burned_200";
+    }
 }
