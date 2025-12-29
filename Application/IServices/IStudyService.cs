@@ -13,4 +13,5 @@ public interface IStudyService
     Task<IEnumerable<HeatmapDataDTO>> GetHeatmapAsync(QueryDTO<GetHeatmapRequest> request);
     Task<IEnumerable<ForecastDTO>> GetForecastAsync(QueryDTO<GetForecastRequest> request);
     Task<AccuracyDTO> GetAccuracyAsync(QueryDTO<GetAccuracyRequest> request);
+    Task<LevelDistributionDTO> GetDistributionAsync(QueryDTO<GetDistributionRequest> request);
 }

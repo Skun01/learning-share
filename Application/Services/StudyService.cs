@@ -25,20 +25,10 @@ public class StudyService : IStudyService
 
         var reviews = await _unitOfWork.UserCardProgresses.CountDueReviewsAsync(userId, deckId);
         var ghosts = await _unitOfWork.UserCardProgresses.CountGhostsAsync(userId, deckId);
-        
-        int newCards = 0;
-        if (deckId.HasValue)
-        {
-            newCards = await _unitOfWork.UserCardProgresses.CountNewCardsAsync(userId, deckId.Value);
-        }
-        else
-        {
-            var userDecks = await _unitOfWork.Decks.GetByUserId(userId);
-            foreach (var deck in userDecks)
-            {
-                newCards += await _unitOfWork.UserCardProgresses.CountNewCardsAsync(userId, deck.Id);
-            }
-        }
+
+        int newCards = deckId.HasValue
+            ? await _unitOfWork.UserCardProgresses.CountNewCardsAsync(userId, deckId.Value)
+            : await _unitOfWork.UserCardProgresses.CountAllNewCardsAsync(userId);
 
         return new StudyCountDTO
         {
@@ -172,7 +162,7 @@ public class StudyService : IStudyService
 
         var logs = await _unitOfWork.StudyLogs.GetByDateRangeAsync(userId, startDate, endDate);
 
-        var heatmapData = logs
+        return logs
             .GroupBy(l => l.ReviewDate.Date)
             .Select(g => new HeatmapDataDTO
             {
@@ -181,8 +171,6 @@ public class StudyService : IStudyService
             })
             .OrderBy(h => h.Date)
             .ToList();
-
-        return heatmapData;
     }
 
     public async Task<IEnumerable<ForecastDTO>> GetForecastAsync(QueryDTO<GetForecastRequest> request)
@@ -190,25 +178,16 @@ public class StudyService : IStudyService
         var userId = request.UserId;
         var days = request.Query?.Days ?? 7;
 
-        var now = DateTime.UtcNow.Date;
-        var endDate = now.AddDays(days);
+        var forecast = await _unitOfWork.UserCardProgresses.GetForecastAsync(userId, days);
 
-        var progresses = await _unitOfWork.UserCardProgresses.GetByUserId(userId);
-
-        var forecast = progresses
-            .Where(p => p.NextReviewDate.HasValue 
-                && p.NextReviewDate.Value.Date >= now 
-                && p.NextReviewDate.Value.Date <= endDate)
-            .GroupBy(p => p.NextReviewDate!.Value.Date)
-            .Select(g => new ForecastDTO
+        return forecast
+            .OrderBy(kvp => kvp.Key)
+            .Select(kvp => new ForecastDTO
             {
-                Date = g.Key.ToString("yyyy-MM-dd"),
-                Count = g.Count()
+                Date = kvp.Key.ToString("yyyy-MM-dd"),
+                Count = kvp.Value
             })
-            .OrderBy(f => f.Date)
             .ToList();
-
-        return forecast;
     }
 
     public async Task<AccuracyDTO> GetAccuracyAsync(QueryDTO<GetAccuracyRequest> request)
@@ -239,6 +218,32 @@ public class StudyService : IStudyService
             Incorrect = incorrect,
             Total = total,
             Rate = Math.Round(rate, 4)
+        };
+    }
+
+    public async Task<LevelDistributionDTO> GetDistributionAsync(QueryDTO<GetDistributionRequest> request)
+    {
+        var userId = request.UserId;
+        var deckId = request.Query?.DeckId;
+
+        var distribution = await _unitOfWork.UserCardProgresses.GetLevelDistributionAsync(userId, deckId);
+
+        // Đảm bảo tất cả levels từ 0-12 đều có
+        for (int i = 0; i <= 12; i++)
+        {
+            if (!distribution.ContainsKey(i))
+                distribution[i] = 0;
+        }
+
+        var total = distribution.Values.Sum();
+        var burnedCount = distribution.GetValueOrDefault(12, 0);
+
+        return new LevelDistributionDTO
+        {
+            Distribution = distribution.OrderBy(kvp => kvp.Key).ToDictionary(kvp => kvp.Key, kvp => kvp.Value),
+            TotalCards = total,
+            LearnedCards = total - distribution.GetValueOrDefault(0, 0),
+            BurnedCards = burnedCount
         };
     }
 }

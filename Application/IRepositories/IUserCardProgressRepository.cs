@@ -14,5 +14,10 @@ public interface IUserCardProgressRepository : IRepository<UserCardProgress>
     Task<int> CountDueReviewsAsync(int userId, int? deckId);
     Task<int> CountGhostsAsync(int userId, int? deckId);
     Task<int> CountNewCardsAsync(int userId, int deckId);
+    Task<int> CountAllNewCardsAsync(int userId);
     Task<IEnumerable<int>> GetLearnedCardIdsAsync(int userId, int deckId);
+    
+    // Stats methods
+    Task<Dictionary<int, int>> GetLevelDistributionAsync(int userId, int? deckId);
+    Task<Dictionary<DateTime, int>> GetForecastAsync(int userId, int days);
 }

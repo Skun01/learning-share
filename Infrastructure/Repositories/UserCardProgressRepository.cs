@@ -106,11 +106,27 @@ public class UserCardProgressRepository : Repository<UserCardProgress>, IUserCar
 
     public async Task<int> CountNewCardsAsync(int userId, int deckId)
     {
-        // Count cards in deck that user hasn't started learning
         var learnedCardIds = await GetLearnedCardIdsAsync(userId, deckId);
         
         return await _context.Cards
             .Where(c => c.DeckId == deckId && !learnedCardIds.Contains(c.Id))
+            .CountAsync();
+    }
+
+    public async Task<int> CountAllNewCardsAsync(int userId)
+    {
+        var userDeckIds = await _context.Decks
+            .Where(d => d.UserId == userId)
+            .Select(d => d.Id)
+            .ToListAsync();
+
+        var learnedCardIds = await _context.UserCardProgresses
+            .Where(ucp => ucp.UserId == userId)
+            .Select(ucp => ucp.CardId)
+            .ToListAsync();
+
+        return await _context.Cards
+            .Where(c => userDeckIds.Contains(c.DeckId) && !learnedCardIds.Contains(c.Id))
             .CountAsync();
     }
 
@@ -120,5 +136,40 @@ public class UserCardProgressRepository : Repository<UserCardProgress>, IUserCar
             .Where(ucp => ucp.UserId == userId && ucp.Card.DeckId == deckId)
             .Select(ucp => ucp.CardId)
             .ToListAsync();
+    }
+
+    public async Task<Dictionary<int, int>> GetLevelDistributionAsync(int userId, int? deckId)
+    {
+        var query = _context.UserCardProgresses
+            .Where(ucp => ucp.UserId == userId);
+
+        if (deckId.HasValue)
+        {
+            query = query.Where(ucp => ucp.Card.DeckId == deckId.Value);
+        }
+
+        var distribution = await query
+            .GroupBy(ucp => (int)ucp.SRSLevel)
+            .Select(g => new { Level = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.Level, x => x.Count);
+
+        return distribution;
+    }
+
+    public async Task<Dictionary<DateTime, int>> GetForecastAsync(int userId, int days)
+    {
+        var now = DateTime.UtcNow.Date;
+        var endDate = now.AddDays(days);
+
+        var forecast = await _context.UserCardProgresses
+            .Where(ucp => ucp.UserId == userId 
+                && ucp.NextReviewDate.HasValue 
+                && ucp.NextReviewDate.Value.Date >= now 
+                && ucp.NextReviewDate.Value.Date <= endDate)
+            .GroupBy(ucp => ucp.NextReviewDate!.Value.Date)
+            .Select(g => new { Date = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.Date, x => x.Count);
+
+        return forecast;
     }
 }

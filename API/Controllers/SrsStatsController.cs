@@ -63,4 +63,19 @@ public class SrsStatsController : BaseController
 
         return await HandleException(_studyService.GetAccuracyAsync(requestModel));
     }
+
+    /// <summary>
+    /// Lấy phân bố cards theo SRS level (0-12)
+    /// </summary>
+    [HttpGet("distribution")]
+    public async Task<ApiResponse<LevelDistributionDTO>> GetDistributionAsync([FromQuery] GetDistributionRequest request)
+    {
+        var requestModel = new QueryDTO<GetDistributionRequest>
+        {
+            UserId = GetCurrentUserId(),
+            Query = request
+        };
+
+        return await HandleException(_studyService.GetDistributionAsync(requestModel));
+    }
 }
