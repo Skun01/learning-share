@@ -17,13 +17,16 @@ public class AuthService : IAuthService
     private readonly IEmailSenderService _emailService;
     private readonly IEmailTemplateService _emailTemplateService;
     private readonly AppSettings _appSettings;
+    private readonly JwtSettings _jwtSettings;
+    
     public AuthService(IUnitOfWork unitOfWork, ITokenService tokenService, IEmailSenderService emailService,
-        IOptions<AppSettings> _settings, IEmailTemplateService emailTemplateService)
+        IOptions<AppSettings> appSettings, IOptions<JwtSettings> jwtSettings, IEmailTemplateService emailTemplateService)
     {
         _unitOfWork = unitOfWork;
         _tokenService = tokenService;
         _emailService = emailService;
-        _appSettings = _settings.Value;
+        _appSettings = appSettings.Value;
+        _jwtSettings = jwtSettings.Value;
         _emailTemplateService = emailTemplateService;
     }
 
@@ -34,7 +37,7 @@ public class AuthService : IAuthService
         if(user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
             throw new ApplicationException(MessageConstant.AuthMessage.INVALID_LOGIN);
 
-        return CreateAuthDTO(user);
+        return await CreateAuthDTOAsync(user);
     }
     
     public async Task<AuthDTO> RegisterAsync(RegisterRequest request)
@@ -57,7 +60,7 @@ public class AuthService : IAuthService
         await _unitOfWork.UserSettings.AddAsync(settings);
         await _unitOfWork.SaveChangesAsync();
 
-        return CreateAuthDTO(newUser);
+        return await CreateAuthDTOAsync(newUser);
     }
 
     public async Task<bool> ResetPasswordAsync(ResetPasswordRequest request)
@@ -105,10 +108,56 @@ public class AuthService : IAuthService
         return true;
     }
 
-    private AuthDTO CreateAuthDTO(User user)
+    public async Task<AuthDTO> RefreshTokenAsync(RefreshTokenRequest request)
+    {
+        var refreshTokenEntity = await _unitOfWork.RefreshTokens.GetByTokenAsync(request.RefreshToken);
+
+        if (refreshTokenEntity == null)
+            throw new ApplicationException(MessageConstant.AuthMessage.INVALID_REFRESH_TOKEN);
+
+        if (refreshTokenEntity.ExpiresAt < DateTime.UtcNow)
+            throw new ApplicationException(MessageConstant.AuthMessage.REFRESH_TOKEN_EXPIRED);
+
+        // Revoke old token
+        refreshTokenEntity.IsRevoked = true;
+        refreshTokenEntity.RevokedAt = DateTime.UtcNow;
+        _unitOfWork.RefreshTokens.UpdateAsync(refreshTokenEntity);
+        await _unitOfWork.SaveChangesAsync();
+
+        // Create new tokens
+        return await CreateAuthDTOAsync(refreshTokenEntity.User);
+    }
+
+    public async Task<bool> RevokeTokenAsync(string refreshToken)
+    {
+        var refreshTokenEntity = await _unitOfWork.RefreshTokens.GetByTokenAsync(refreshToken);
+
+        if (refreshTokenEntity == null)
+            throw new ApplicationException(MessageConstant.AuthMessage.INVALID_REFRESH_TOKEN);
+
+        refreshTokenEntity.IsRevoked = true;
+        refreshTokenEntity.RevokedAt = DateTime.UtcNow;
+        _unitOfWork.RefreshTokens.UpdateAsync(refreshTokenEntity);
+        await _unitOfWork.SaveChangesAsync();
+
+        return true;
+    }
+
+    private async Task<AuthDTO> CreateAuthDTOAsync(User user)
     {
         var accessToken = _tokenService.GenerateAccessToken(user);
         var refreshToken = _tokenService.GenerateRefreshToken();
+
+        // Save refresh token to database
+        var refreshTokenEntity = new RefreshToken
+        {
+            Token = refreshToken,
+            ExpiresAt = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpireDays),
+            UserId = user.Id
+        };
+        
+        await _unitOfWork.RefreshTokens.AddAsync(refreshTokenEntity);
+        await _unitOfWork.SaveChangesAsync();
 
         return new AuthDTO
         {

@@ -19,4 +19,5 @@ public class User : BaseEntity
     public ICollection<Deck> Decks { get; set; } = [];
     public ICollection<UserCardProgress> Progresses { get; set; } = new List<UserCardProgress>();
     public ICollection<StudyLog> StudyLogs { get; set; } = new List<StudyLog>();
+    public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 }

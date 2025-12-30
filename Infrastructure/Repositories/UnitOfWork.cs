@@ -16,6 +16,7 @@ public class UnitOfWork : IUnitOfWork
     public IGrammarDetailsRepository GrammarDetails { get; private set; }
     public IRepository<MediaFile> MediaFiles { get; private set; }
     public IStudyLogRepository StudyLogs { get; private set; }
+    public IRefreshTokenRepository RefreshTokens { get; private set; }
 
     private readonly AppDbContext _context;
     public UnitOfWork(AppDbContext context)
@@ -31,6 +32,7 @@ public class UnitOfWork : IUnitOfWork
         GrammarDetails = new GrammarDetailsRepository(_context);
         MediaFiles = new Repository<MediaFile>(_context);
         StudyLogs = new StudyLogRepository(_context);
+        RefreshTokens = new RefreshTokenRepository(_context);
     }
 
     public void Dispose()

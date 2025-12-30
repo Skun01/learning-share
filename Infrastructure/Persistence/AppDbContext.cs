@@ -16,6 +16,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<UserCardProgress> UserCardProgresses { get; set; }
     public DbSet<StudyLog> StudyLogs { get; set; }
     public DbSet<MediaFile> MediaFiles { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

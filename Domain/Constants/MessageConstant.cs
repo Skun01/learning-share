@@ -20,6 +20,8 @@ public static class MessageConstant
         public const string INVALID_LOGIN = "Invalid_400";  // Tài khoản hoặc mật khẩu không đúng
         public const string RESET_PASSWORD_TOKEN_EXPIRED = "Reset_Password_Token_Expired_400"; // reset password token hết hạn
         public const string CURRENT_PASSWORD_INVALID = "Current_Password_Invalid_400";
+        public const string INVALID_REFRESH_TOKEN = "Invalid_Refresh_Token_400";
+        public const string REFRESH_TOKEN_EXPIRED = "Refresh_Token_Expired_400";
     }
 
     public static class FileUploadMessage

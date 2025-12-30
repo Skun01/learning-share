@@ -69,4 +69,30 @@ public class AuthController : BaseController
 
         return result;
     }
+
+    /// <summary>
+    /// Làm mới access token bằng refresh token
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost("refresh")]
+    public async Task<ApiResponse<AuthDTO>> RefreshToken([FromBody] RefreshTokenRequest request)
+    {
+        var result = await HandleException(_service.RefreshTokenAsync(request));
+
+        return result;
+    }
+
+    /// <summary>
+    /// Thu hồi refresh token (logout)
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost("revoke")]
+    public async Task<ApiResponse<bool>> RevokeToken([FromBody] RefreshTokenRequest request)
+    {
+        var result = await HandleException(_service.RevokeTokenAsync(request.RefreshToken));
+
+        return result;
+    }
 }

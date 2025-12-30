@@ -14,5 +14,6 @@ public interface IUnitOfWork : IDisposable
     IGrammarDetailsRepository GrammarDetails { get; }
     IRepository<MediaFile> MediaFiles { get; }
     IStudyLogRepository StudyLogs { get; }
+    IRefreshTokenRepository RefreshTokens { get; }
     Task<int> SaveChangesAsync();
 }
