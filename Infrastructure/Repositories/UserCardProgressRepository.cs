@@ -1,4 +1,5 @@
 using Application.IRepositories;
+using Domain.Constants;
 using Domain.Entities;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -171,5 +172,38 @@ public class UserCardProgressRepository : Repository<UserCardProgress>, IUserCar
             .ToDictionaryAsync(x => x.Date, x => x.Count);
 
         return forecast;
+    }
+
+    public async Task<IEnumerable<UserCardProgress>> GetCramCardsAsync(int userId, List<int> deckIds, string type, int? specificLevel, int limit)
+    {
+        var query = _context.UserCardProgresses
+            .Include(ucp => ucp.Card)
+                .ThenInclude(c => c.Deck)
+            .Include(ucp => ucp.Card)
+                .ThenInclude(c => c.Examples)
+                    .ThenInclude(e => e.AudioMedia)
+            .Include(ucp => ucp.Card)
+                .ThenInclude(c => c.GrammarDetails)
+            .Include(ucp => ucp.Card)
+                .ThenInclude(c => c.ImageMedia)
+            .Where(ucp => ucp.UserId == userId);
+
+        if (deckIds.Count > 0)
+        {
+            query = query.Where(ucp => deckIds.Contains(ucp.Card.DeckId));
+        }
+
+        query = type.ToLower() switch
+        {
+            CramType.Troubled => query.Where(ucp => ucp.GhostLevel > 0),
+            CramType.Burned => query.Where(ucp => (int)ucp.SRSLevel == 12),
+            CramType.Level when specificLevel.HasValue => query.Where(ucp => (int)ucp.SRSLevel == specificLevel.Value),
+            _ => query
+        };
+
+        return await query
+            .OrderBy(ucp => Guid.NewGuid())
+            .Take(limit)
+            .ToListAsync();
     }
 }

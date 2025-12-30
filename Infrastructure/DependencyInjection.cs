@@ -34,6 +34,7 @@ public static class DependencyInjection
         services.AddScoped<IMediaService, MediaService>();
         services.AddScoped<IStudyService, StudyService>();
         services.AddScoped<ISessionService, SessionService>();
+        services.AddScoped<ICramService, CramService>();
 
         // internal services
         services.AddScoped<ITokenService, TokenService>();

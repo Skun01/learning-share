@@ -20,4 +20,7 @@ public interface IUserCardProgressRepository : IRepository<UserCardProgress>
     // Stats methods
     Task<Dictionary<int, int>> GetLevelDistributionAsync(int userId, int? deckId);
     Task<Dictionary<DateTime, int>> GetForecastAsync(int userId, int days);
+    
+    // Cram methods
+    Task<IEnumerable<UserCardProgress>> GetCramCardsAsync(int userId, List<int> deckIds, string type, int? specificLevel, int limit);
 }
