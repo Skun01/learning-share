@@ -152,7 +152,11 @@ public class CardService : ICardService
                 Structure = request.GrammarDetails.Structure,
                 Explanation = request.GrammarDetails.Explanation,
                 Caution = request.GrammarDetails.Caution,
-                Level = level
+                Level = level,
+                FormationRules = request.GrammarDetails.FormationRules,
+                Nuance = request.GrammarDetails.Nuance,
+                UsageNotes = request.GrammarDetails.UsageNotes,
+                Register = request.GrammarDetails.Register
             };
             await _unitOfWork.GrammarDetails.AddAsync(grammarDetails);
         }
@@ -275,7 +279,11 @@ public class CardService : ICardService
                 Structure = card.GrammarDetails.Structure,
                 Explanation = card.GrammarDetails.Explanation,
                 Caution = card.GrammarDetails.Caution,
-                Level = card.GrammarDetails.Level.ToString()
+                Level = card.GrammarDetails.Level.ToString(),
+                FormationRules = card.GrammarDetails.FormationRules,
+                Nuance = card.GrammarDetails.Nuance,
+                UsageNotes = card.GrammarDetails.UsageNotes,
+                Register = card.GrammarDetails.Register
             } : null,
             Examples = card.Examples.Select(e => new CardExampleDTO
             {
@@ -354,7 +362,11 @@ public class CardService : ICardService
                     Structure = cardRequest.GrammarDetails.Structure,
                     Explanation = cardRequest.GrammarDetails.Explanation,
                     Caution = cardRequest.GrammarDetails.Caution,
-                    Level = level
+                    Level = level,
+                    FormationRules = cardRequest.GrammarDetails.FormationRules,
+                    Nuance = cardRequest.GrammarDetails.Nuance,
+                    UsageNotes = cardRequest.GrammarDetails.UsageNotes,
+                    Register = cardRequest.GrammarDetails.Register
                 };
                 await _unitOfWork.GrammarDetails.AddAsync(grammarDetails);
             }
@@ -619,7 +631,11 @@ public class CardService : ICardService
                 Structure = request.Structure,
                 Explanation = request.Explanation,
                 Caution = request.Caution,
-                Level = Enum.TryParse<Level>(request.Level, true, out var level) ? level : Level.N5
+                Level = Enum.TryParse<Level>(request.Level, true, out var level) ? level : Level.N5,
+                FormationRules = request.FormationRules,
+                Nuance = request.Nuance,
+                UsageNotes = request.UsageNotes,
+                Register = request.Register
             };
             await _unitOfWork.GrammarDetails.AddAsync(newGrammar);
             await _unitOfWork.SaveChangesAsync();
@@ -629,7 +645,11 @@ public class CardService : ICardService
                 Structure = newGrammar.Structure,
                 Explanation = newGrammar.Explanation,
                 Caution = newGrammar.Caution,
-                Level = newGrammar.Level.ToString()
+                Level = newGrammar.Level.ToString(),
+                FormationRules = newGrammar.FormationRules,
+                Nuance = newGrammar.Nuance,
+                UsageNotes = newGrammar.UsageNotes,
+                Register = newGrammar.Register
             };
         }
         else
@@ -640,6 +660,10 @@ public class CardService : ICardService
             if (request.Caution != null) card.GrammarDetails.Caution = request.Caution;
             if (request.Level != null && Enum.TryParse<Level>(request.Level, true, out var level))
                 card.GrammarDetails.Level = level;
+            if (request.FormationRules != null) card.GrammarDetails.FormationRules = request.FormationRules;
+            if (request.Nuance != null) card.GrammarDetails.Nuance = request.Nuance;
+            if (request.UsageNotes != null) card.GrammarDetails.UsageNotes = request.UsageNotes;
+            if (request.Register != null) card.GrammarDetails.Register = request.Register;
 
             _unitOfWork.GrammarDetails.UpdateAsync(card.GrammarDetails);
             await _unitOfWork.SaveChangesAsync();
@@ -649,7 +673,11 @@ public class CardService : ICardService
                 Structure = card.GrammarDetails.Structure,
                 Explanation = card.GrammarDetails.Explanation,
                 Caution = card.GrammarDetails.Caution,
-                Level = card.GrammarDetails.Level.ToString()
+                Level = card.GrammarDetails.Level.ToString(),
+                FormationRules = card.GrammarDetails.FormationRules,
+                Nuance = card.GrammarDetails.Nuance,
+                UsageNotes = card.GrammarDetails.UsageNotes,
+                Register = card.GrammarDetails.Register
             };
         }
     }

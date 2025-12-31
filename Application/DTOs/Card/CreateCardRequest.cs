@@ -6,6 +6,10 @@ public class GrammarDetailsRequest
     public string? Explanation { get; set; }
     public string? Caution { get; set; }
     public string Level { get; set; } = "N5";
+    public string? FormationRules { get; set; }
+    public string? Nuance { get; set; }
+    public string? UsageNotes { get; set; }
+    public string? Register { get; set; }
 }
 
 public class CardExampleRequest

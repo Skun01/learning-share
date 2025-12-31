@@ -24,4 +24,8 @@ public class UpdateGrammarRequest
     public string? Explanation { get; set; }
     public string? Caution { get; set; }
     public string? Level { get; set; }
+    public string? FormationRules { get; set; }
+    public string? Nuance { get; set; }
+    public string? UsageNotes { get; set; }
+    public string? Register { get; set; }
 }
