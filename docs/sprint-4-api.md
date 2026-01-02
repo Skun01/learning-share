@@ -75,24 +75,33 @@ Số lượng cards cần học - dùng cho Dashboard.
 
 Thông tin card trong phiên học.
 
-| Field              | Type                 | Description                     |
-| ------------------ | -------------------- | ------------------------------- |
-| `cardId`           | `number`             | ID của card                     |
-| `deckId`           | `number`             | ID deck chứa card               |
-| `deckName`         | `string`             | Tên deck                        |
-| `type`             | `string`             | `"Vocabulary"` hoặc `"Grammar"` |
-| `term`             | `string`             | Từ vựng/cấu trúc                |
-| `meaning`          | `string`             | Nghĩa                           |
-| `synonyms`         | `string?`            | Từ đồng nghĩa                   |
-| `imageMediaId`     | `number?`            | ID ảnh                          |
-| `imageUrl`         | `string?`            | URL ảnh                         |
-| `note`             | `string?`            | Ghi chú                         |
-| `srsLevel`         | `number`             | Level SRS hiện tại (0-12)       |
-| `ghostLevel`       | `number`             | Ghost level (0-3)               |
-| `streak`           | `number`             | Số lần đúng liên tiếp           |
-| `lastReviewedDate` | `string?`            | Lần review gần nhất             |
-| `grammarDetails`   | `GrammarDetailsDTO?` | Chi tiết ngữ pháp               |
-| `examples`         | `CardExampleDTO[]`   | Danh sách ví dụ                 |
+| Field              | Type                    | Description                          |
+| ------------------ | ----------------------- | ------------------------------------ |
+| `cardId`           | `number`                | ID của card                          |
+| `deckId`           | `number`                | ID deck chứa card                    |
+| `deckName`         | `string`                | Tên deck                             |
+| `type`             | `string`                | `"Vocabulary"` hoặc `"Grammar"`      |
+| `term`             | `string`                | Từ vựng/cấu trúc                     |
+| `meaning`          | `string`                | Nghĩa                                |
+| `synonyms`         | `string?`               | Từ đồng nghĩa                        |
+| `imageMediaId`     | `number?`               | ID ảnh                               |
+| `imageUrl`         | `string?`               | URL ảnh                              |
+| `note`             | `string?`               | Ghi chú                              |
+| `srsLevel`         | `number`                | Level SRS hiện tại (0-12)            |
+| `ghostLevel`       | `number`                | Ghost level (0-3)                    |
+| `streak`           | `number`                | Số lần đúng liên tiếp                |
+| `lastReviewedDate` | `string?`               | Lần review gần nhất                  |
+| `easeFactor`       | `number`                | **[NEW]** SM-2 ease factor (1.3-2.5) |
+| `totalReviews`     | `number`                | **[NEW]** Tổng số lần review         |
+| `correctCount`     | `number`                | **[NEW]** Số lần đúng                |
+| `incorrectCount`   | `number`                | **[NEW]** Số lần sai                 |
+| `lapseCount`       | `number`                | **[NEW]** Số lần "lapse" (rớt level) |
+| `firstLearnedDate` | `string?`               | **[NEW]** Ngày học lần đầu           |
+| `isSuspended`      | `boolean`               | **[NEW]** Card có bị tạm dừng không  |
+| `isLeech`          | `boolean`               | **[NEW]** Card khó nhớ (lapses >= 8) |
+| `grammarDetails`   | `GrammarDetailsDTO?`    | Chi tiết ngữ pháp                    |
+| `vocabularyDetails`| `VocabularyDetailsDTO?` | **[NEW]** Chi tiết từ vựng           |
+| `examples`         | `CardExampleDTO[]`      | Danh sách ví dụ                      |
 
 ### SessionDTO
 
@@ -125,20 +134,39 @@ Tổng kết sau khi kết thúc phiên học.
 | `startedAt`        | `string` | Thời gian bắt đầu    |
 | `endedAt`          | `string` | Thời gian kết thúc   |
 
+### SubmitReviewRequest
+
+Request body khi submit review.
+
+| Field         | Type      | Required | Description                           |
+| ------------- | --------- | -------- | ------------------------------------- |
+| `isCorrect`   | `boolean` | ✅       | Người dùng trả lời đúng/sai           |
+| `timeSpentMs` | `number`  | ❌       | Thời gian suy nghĩ (ms)               |
+| `userAnswer`  | `string`  | ❌       | **[NEW]** Câu trả lời của user        |
+| `exampleId`   | `number`  | ❌       | **[NEW]** Example ID được sử dụng     |
+| `sessionId`   | `string`  | ❌       | **[NEW]** Session ID để nhóm reviews  |
+| `reviewType`  | `string`  | ❌       | **[NEW]** `"Learn"`, `"Review"`, `"Cram"`, `"Ghost"` |
+
 ### SubmitReviewResponse
 
 Kết quả sau khi submit review.
 
-| Field            | Type      | Description                  |
-| ---------------- | --------- | ---------------------------- |
-| `cardId`         | `number`  | ID card                      |
-| `oldLevel`       | `number`  | Level SRS trước đó           |
-| `newLevel`       | `number`  | Level SRS mới                |
-| `nextReviewDate` | `string`  | Ngày review tiếp theo        |
-| `ghostLevel`     | `number`  | Ghost level sau khi cập nhật |
-| `streak`         | `number`  | Streak sau khi cập nhật      |
-| `isCorrect`      | `boolean` | Kết quả đúng/sai             |
-| `message`        | `string`  | Thông điệp (vd: "Level up!") |
+| Field            | Type      | Description                          |
+| ---------------- | --------- | ------------------------------------ |
+| `cardId`         | `number`  | ID card                              |
+| `oldLevel`       | `number`  | Level SRS trước đó                   |
+| `newLevel`       | `number`  | Level SRS mới                        |
+| `nextReviewDate` | `string`  | Ngày review tiếp theo                |
+| `ghostLevel`     | `number`  | Ghost level sau khi cập nhật         |
+| `streak`         | `number`  | Streak sau khi cập nhật              |
+| `isCorrect`      | `boolean` | Kết quả đúng/sai                     |
+| `message`        | `string`  | Thông điệp (vd: "Level up!")         |
+| `easeFactor`     | `number`  | **[NEW]** Ease factor sau cập nhật   |
+| `totalReviews`   | `number`  | **[NEW]** Tổng số reviews            |
+| `correctCount`   | `number`  | **[NEW]** Tổng số lần đúng           |
+| `incorrectCount` | `number`  | **[NEW]** Tổng số lần sai            |
+| `lapseCount`     | `number`  | **[NEW]** Số lần lapse               |
+| `isLeech`        | `boolean` | **[NEW]** true nếu lapseCount >= 8   |
 
 ---
 
@@ -212,7 +240,18 @@ GET /srs/reviews/available
       "srsLevel": 3,
       "ghostLevel": 0,
       "streak": 2,
-      ...
+      "easeFactor": 2.5,
+      "totalReviews": 5,
+      "correctCount": 4,
+      "incorrectCount": 1,
+      "lapseCount": 0,
+      "isLeech": false,
+      "vocabularyDetails": {
+        "reading": "たべる",
+        "partOfSpeech": "Verb",
+        "verbGroup": "Group 2"
+      },
+      "examples": [...]
     }
   ]
 }
@@ -222,6 +261,7 @@ GET /srs/reviews/available
 
 - Ghost cards được ưu tiên trả về trước
 - Cards được sắp xếp theo mức độ cần ôn
+- **[NEW]** Response bao gồm `vocabularyDetails` cho Vocabulary cards
 
 ---
 
@@ -265,14 +305,21 @@ POST /srs/reviews/{cardId}/submit
 ```json
 {
   "isCorrect": true,
-  "timeSpentMs": 3500
+  "timeSpentMs": 3500,
+  "userAnswer": "食べる",
+  "reviewType": "Review",
+  "sessionId": "550e8400-e29b-41d4-a716-446655440000"
 }
 ```
 
-| Field         | Type      | Required | Description                 |
-| ------------- | --------- | -------- | --------------------------- |
-| `isCorrect`   | `boolean` | ✅       | Người dùng trả lời đúng/sai |
-| `timeSpentMs` | `number`  | ❌       | Thời gian suy nghĩ (ms)     |
+| Field         | Type      | Required | Description                                          |
+| ------------- | --------- | -------- | ---------------------------------------------------- |
+| `isCorrect`   | `boolean` | ✅       | Người dùng trả lời đúng/sai                          |
+| `timeSpentMs` | `number`  | ❌       | Thời gian suy nghĩ (ms)                              |
+| `userAnswer`  | `string`  | ❌       | **[NEW]** Câu trả lời của user                       |
+| `exampleId`   | `number`  | ❌       | **[NEW]** Example được dùng trong quiz               |
+| `sessionId`   | `string`  | ❌       | **[NEW]** Session ID để nhóm các reviews             |
+| `reviewType`  | `string`  | ❌       | **[NEW]** Loại review: `Learn`, `Review`, `Cram`, `Ghost` |
 
 #### Response
 
@@ -288,7 +335,13 @@ POST /srs/reviews/{cardId}/submit
     "ghostLevel": 0,
     "streak": 3,
     "isCorrect": true,
-    "message": "Good job! Level up to 4"
+    "message": "Good job! Level up to 4",
+    "easeFactor": 2.5,
+    "totalReviews": 6,
+    "correctCount": 5,
+    "incorrectCount": 1,
+    "lapseCount": 0,
+    "isLeech": false
   }
 }
 ```
@@ -307,6 +360,14 @@ POST /srs/reviews/{cardId}/submit
 | 7     | 1 tháng  | Master                  |
 | 8     | 4 tháng  | Enlightened             |
 | 9-12  | Burned   | Đã thuộc (không ôn nữa) |
+
+### Ease Factor Algorithm (SM-2)
+
+> **[NEW]** Hệ thống SRS sử dụng thuật toán SM-2 để điều chỉnh độ khó của mỗi card.
+
+- **Đúng**: `easeFactor += 0.1` (tối đa 2.5)
+- **Sai**: `easeFactor -= 0.2` (tối thiểu 1.3)
+- **Leech Detection**: Nếu `lapseCount >= 8`, card được đánh dấu là "leech" - cần xem xét lại
 
 ---
 
@@ -492,25 +553,24 @@ POST /srs/cram/start
 
 ```json
 {
-  "deckIds": [1, 2, 3],
-  "type": "all",
-  "specificLevel": null,
+  "deckId": 1,
+  "mode": "All",
   "limit": 20
 }
 ```
 
-| Field           | Type       | Required | Default | Description                     |
-| --------------- | ---------- | -------- | ------- | ------------------------------- |
-| `deckIds`       | `number[]` | ✅       | -       | Các decks muốn luyện            |
-| `type`          | `string`   | ❌       | `"all"` | `"all"`, `"level"`, `"failed"`  |
-| `specificLevel` | `number`   | ❌       | null    | Level cụ thể khi type = "level" |
-| `limit`         | `number`   | ❌       | 20      | Số cards tối đa                 |
+| Field    | Type     | Required | Default | Description                           |
+| -------- | -------- | -------- | ------- | ------------------------------------- |
+| `deckId` | `number` | ✅       | -       | Deck muốn luyện                       |
+| `mode`   | `string` | ❌       | `"All"` | `"All"`, `"Due"`, `"Failed"`, `"New"` |
+| `limit`  | `number` | ❌       | 20      | Số cards tối đa                       |
 
-**Type giải thích:**
+**Mode giải thích:**
 
-- `all`: Tất cả cards trong deck
-- `level`: Chỉ cards ở level cụ thể
-- `failed`: Cards đã sai trong hôm nay
+- `All`: Tất cả cards trong deck (đã học)
+- `Due`: Chỉ cards đến hạn review
+- `Failed`: Cards đã sai trong session gần nhất
+- `New`: Cards chưa học
 
 #### Response
 
@@ -548,17 +608,13 @@ POST /srs/cram/submit
 {
   "sessionId": "660e8400-e29b-41d4-a716-446655440000",
   "cardId": 1,
-  "isCorrect": false,
-  "correct": 3,
-  "incorrect": 1,
-  "remainingQueue": [5, 8, 11],
-  "startedAt": "2024-12-30T14:00:00Z"
+  "isCorrect": false
 }
 ```
 
 #### Response
 
-Trả về `CramSessionDTO` với card tiếp theo.
+Trả về session state với card tiếp theo.
 
 ### Notes
 
@@ -578,6 +634,8 @@ Trả về `CramSessionDTO` với card tiếp theo.
 - [ ] **SessionSummary** - Màn hình tổng kết sau khi học xong
 - [ ] **CramModeSelector** - Chọn mode và decks cho Cram
 - [ ] **SRSLevelBadge** - Hiển thị level SRS của card
+- [ ] **LeechIndicator** - **[NEW]** Hiển thị warning cho leech cards
+- [ ] **EaseFactorDisplay** - **[NEW]** Hiển thị ease factor (optional)
 
 ---
 
