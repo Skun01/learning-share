@@ -17,14 +17,25 @@ public class StudyCardDTO
     public int? ImageMediaId { get; set; }
     public string? ImageUrl { get; set; }
     public string? Note { get; set; }
-    
-    // SRS Progress info
+
+    // Thông tin tiến độ SRS
     public int SRSLevel { get; set; }
     public int GhostLevel { get; set; }
     public int Streak { get; set; }
     public DateTime? LastReviewedDate { get; set; }
-    
+
+    // === Thông tin SRS mở rộng ===
+    public float EaseFactor { get; set; }
+    public int TotalReviews { get; set; }
+    public int CorrectCount { get; set; }
+    public int IncorrectCount { get; set; }
+    public int LapseCount { get; set; }
+    public DateTime? FirstLearnedDate { get; set; }
+    public bool IsSuspended { get; set; }
+    public bool IsLeech { get; set; } // Computed: LapseCount >= threshold
+
     // Related data
     public GrammarDetailsDTO? GrammarDetails { get; set; }
+    public VocabularyDetailsDTO? VocabularyDetails { get; set; }
     public List<CardExampleDTO> Examples { get; set; } = new();
 }

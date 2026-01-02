@@ -78,7 +78,13 @@ public class StudyService : IStudyService
                 CardId = cardId,
                 SRSLevel = SRSLevel.New,
                 GhostLevel = 0,
-                Streak = 0
+                Streak = 0,
+                EaseFactor = 2.5f,
+                TotalReviews = 0,
+                CorrectCount = 0,
+                IncorrectCount = 0,
+                LapseCount = 0,
+                FirstLearnedDate = DateTime.UtcNow
             };
             await _unitOfWork.UserCardProgresses.AddAsync(progress);
         }
@@ -88,36 +94,58 @@ public class StudyService : IStudyService
         DateTime nextReviewDate;
         string message;
 
+        // Cập nhật thống kê
+        progress.TotalReviews++;
+
         if (isCorrect)
         {
-            newLevel = progress.SRSLevel < SRSLevel.Burned 
-                ? (SRSLevel)((int)progress.SRSLevel + 1) 
+            progress.CorrectCount++;
+
+            newLevel = progress.SRSLevel < SRSLevel.Burned
+                ? (SRSLevel)((int)progress.SRSLevel + 1)
                 : SRSLevel.Burned;
-            
+
+            // Điều chỉnh EaseFactor khi đúng (tăng nhẹ, tối đa 2.5)
+            progress.EaseFactor = Math.Min(progress.EaseFactor + 0.1f, 2.5f);
+
             nextReviewDate = SRSIntervals.GetNextReviewDate(newLevel);
-            
+
             if (progress.GhostLevel > 0)
                 progress.GhostLevel--;
-            
+
             progress.Streak++;
-            
-            message = newLevel == SRSLevel.Burned 
-                ? MessageConstant.SrsMessage.REVIEW_BURNED 
+
+            // Đánh dấu ngày Burned
+            if (newLevel == SRSLevel.Burned && progress.BurnedDate == null)
+                progress.BurnedDate = DateTime.UtcNow;
+
+            message = newLevel == SRSLevel.Burned
+                ? MessageConstant.SrsMessage.REVIEW_BURNED
                 : MessageConstant.SrsMessage.REVIEW_CORRECT;
         }
         else
         {
+            progress.IncorrectCount++;
+
             int calculatedLevel = Math.Max((int)progress.SRSLevel / 2, 1);
+
+            // Tăng LapseCount nếu bị rớt từ level cao
+            if ((int)progress.SRSLevel > calculatedLevel)
+                progress.LapseCount++;
+
             newLevel = (SRSLevel)calculatedLevel;
-            
+
+            // Điều chỉnh EaseFactor khi sai (giảm, tối thiểu 1.3)
+            progress.EaseFactor = Math.Max(progress.EaseFactor - 0.2f, 1.3f);
+
             nextReviewDate = DateTime.UtcNow.AddHours(1);
-            
+
             var userSettings = await _unitOfWork.UserSettings.GetByUserIdAsync(userId);
             if (userSettings?.EnableGhostMode == true)
                 progress.GhostLevel++;
-            
+
             progress.Streak = 0;
-            
+
             message = MessageConstant.SrsMessage.REVIEW_INCORRECT;
         }
 
@@ -128,16 +156,35 @@ public class StudyService : IStudyService
         if (!isNewCard)
             _unitOfWork.UserCardProgresses.UpdateAsync(progress);
 
+        // Parse ReviewType từ request
+        ReviewType reviewType = ReviewType.Review;
+        if (!string.IsNullOrEmpty(request.ReviewType))
+        {
+            Enum.TryParse(request.ReviewType, true, out reviewType);
+        }
+
         var studyLog = new StudyLog
         {
             UserId = userId,
             CardId = cardId,
             ReviewDate = DateTime.UtcNow,
-            IsCorrect = isCorrect
+            IsCorrect = isCorrect,
+            // === Thông tin chi tiết ===
+            ResponseTimeMs = request.TimeSpentMs,
+            OldLevel = oldLevel,
+            NewLevel = (int)newLevel,
+            ReviewType = reviewType,
+            UserAnswer = request.UserAnswer,
+            ExampleId = request.ExampleId,
+            SessionId = request.SessionId
         };
         await _unitOfWork.StudyLogs.AddAsync(studyLog);
 
         await _unitOfWork.SaveChangesAsync();
+
+        // Lấy leech threshold từ settings (mặc định 8)
+        var settings = await _unitOfWork.UserSettings.GetByUserIdAsync(userId);
+        int leechThreshold = 8; // Sẽ lấy từ settings sau khi cập nhật UserSettings
 
         return new SubmitReviewResponse
         {
@@ -148,7 +195,14 @@ public class StudyService : IStudyService
             GhostLevel = progress.GhostLevel,
             Streak = progress.Streak,
             IsCorrect = isCorrect,
-            Message = message
+            Message = message,
+            // === Thông tin mở rộng ===
+            EaseFactor = progress.EaseFactor,
+            TotalReviews = progress.TotalReviews,
+            CorrectCount = progress.CorrectCount,
+            IncorrectCount = progress.IncorrectCount,
+            LapseCount = progress.LapseCount,
+            IsLeech = progress.LapseCount >= leechThreshold
         };
     }
 

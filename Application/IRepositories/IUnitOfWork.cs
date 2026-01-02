@@ -12,6 +12,7 @@ public interface IUnitOfWork : IDisposable
     ICardRepository Cards { get; }
     ICardExampleRepository CardExamples { get; }
     IGrammarDetailsRepository GrammarDetails { get; }
+    IVocabularyDetailsRepository VocabularyDetails { get; }
     IRepository<MediaFile> MediaFiles { get; }
     IStudyLogRepository StudyLogs { get; }
     IRefreshTokenRepository RefreshTokens { get; }

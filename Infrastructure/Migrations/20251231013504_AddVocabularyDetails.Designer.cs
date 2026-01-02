@@ -4,6 +4,7 @@ using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251231013504_AddVocabularyDetails")]
+    partial class AddVocabularyDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,31 +33,14 @@ namespace Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("AudioMediaId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("DeckId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Difficulty")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(1);
-
-                    b.Property<string>("Hint")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.Property<int?>("ImageMediaId")
                         .HasColumnType("int");
-
-                    b.Property<bool>("IsHidden")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
 
                     b.Property<string>("Meaning")
                         .IsRequired()
@@ -64,16 +50,7 @@ namespace Infrastructure.Migrations
                     b.Property<string>("Note")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Priority")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
                     b.Property<string>("Synonyms")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Tags")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -89,11 +66,9 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AudioMediaId");
+                    b.HasIndex("DeckId");
 
                     b.HasIndex("ImageMediaId");
-
-                    b.HasIndex("DeckId", "Priority");
 
                     b.ToTable("Cards", (string)null);
                 });
@@ -373,41 +348,13 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("ExampleId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsCorrect")
                         .HasColumnType("bit");
-
-                    b.Property<int>("NewLevel")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<int>("OldLevel")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<int?>("ResponseTimeMs")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("ReviewDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETDATE()");
-
-                    b.Property<int>("ReviewType")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(1);
-
-                    b.Property<Guid?>("SessionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("UserAnswer")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -416,11 +363,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("CardId");
 
-                    b.HasIndex("ExampleId");
-
-                    b.HasIndex("SessionId");
-
-                    b.HasIndex("UserId", "ReviewDate");
+                    b.HasIndex("UserId");
 
                     b.ToTable("StudyLogs", (string)null);
                 });
@@ -490,44 +433,13 @@ namespace Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime?>("BurnedDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("CardId")
                         .HasColumnType("int");
-
-                    b.Property<int>("CorrectCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<float>("EaseFactor")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("real")
-                        .HasDefaultValue(2.5f);
-
-                    b.Property<DateTime?>("FirstLearnedDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("GhostLevel")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<int>("IncorrectCount")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<bool>("IsSuspended")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<int>("LapseCount")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(0);
@@ -544,14 +456,6 @@ namespace Infrastructure.Migrations
                         .HasDefaultValue(0);
 
                     b.Property<int>("Streak")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
-
-                    b.Property<DateTime?>("SuspendedUntil")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("TotalReviews")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(0);
@@ -601,28 +505,6 @@ namespace Infrastructure.Migrations
                     b.Property<int>("CardId")
                         .HasColumnType("int");
 
-                    b.Property<string>("AdjectiveType")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Antonyms")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("CommonCollocations")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<int?>("Frequency")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("JLPTLevel")
-                        .HasColumnType("int");
-
-                    b.Property<string>("KanjiComponents")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
                     b.Property<string>("PartOfSpeech")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -635,17 +517,6 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("Transitivity")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("VerbGroup")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int?>("WaniKaniLevel")
-                        .HasColumnType("int");
-
                     b.HasKey("CardId");
 
                     b.ToTable("VocabularyDetails", (string)null);
@@ -653,11 +524,6 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Entities.Card", b =>
                 {
-                    b.HasOne("Domain.Entities.MediaFile", "AudioMedia")
-                        .WithMany()
-                        .HasForeignKey("AudioMediaId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("Domain.Entities.Deck", "Deck")
                         .WithMany("Cards")
                         .HasForeignKey("DeckId")
@@ -668,8 +534,6 @@ namespace Infrastructure.Migrations
                         .WithMany("Cards")
                         .HasForeignKey("ImageMediaId")
                         .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("AudioMedia");
 
                     b.Navigation("Deck");
 
@@ -775,11 +639,6 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.CardExample", "Example")
-                        .WithMany()
-                        .HasForeignKey("ExampleId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("Domain.Entities.User", "User")
                         .WithMany("StudyLogs")
                         .HasForeignKey("UserId")
@@ -787,8 +646,6 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Card");
-
-                    b.Navigation("Example");
 
                     b.Navigation("User");
                 });

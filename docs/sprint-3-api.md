@@ -54,34 +54,43 @@ flowchart TD
 
 Dùng trong danh sách cards - thông tin tóm tắt.
 
-| Field               | Type      | Description                     |
-| ------------------- | --------- | ------------------------------- |
-| `id`                | `number`  | ID của card                     |
-| `type`              | `string`  | `"Vocabulary"` hoặc `"Grammar"` |
-| `term`              | `string`  | Từ/cấu trúc ngữ pháp            |
-| `meaning`           | `string`  | Nghĩa                           |
-| `imageMediaId`      | `number?` | ID của ảnh đính kèm             |
-| `imageUrl`          | `string?` | URL của ảnh                     |
-| `hasExamples`       | `boolean` | Có ví dụ hay không              |
-| `hasGrammarDetails` | `boolean` | Có chi tiết ngữ pháp hay không  |
+| Field                  | Type      | Description                             |
+| ---------------------- | --------- | --------------------------------------- |
+| `id`                   | `number`  | ID của card                             |
+| `type`                 | `string`  | `"Vocabulary"` hoặc `"Grammar"`         |
+| `term`                 | `string`  | Từ/cấu trúc ngữ pháp                    |
+| `meaning`              | `string`  | Nghĩa                                   |
+| `imageMediaId`         | `number?` | ID của ảnh đính kèm                     |
+| `imageUrl`             | `string?` | URL của ảnh                             |
+| `hasExamples`          | `boolean` | Có ví dụ hay không                      |
+| `hasGrammarDetails`    | `boolean` | Có chi tiết ngữ pháp hay không          |
+| `hasVocabularyDetails` | `boolean` | **[NEW]** Có chi tiết từ vựng hay không |
 
 ### CardDetailDTO
 
 Dùng khi xem chi tiết card - thông tin đầy đủ.
 
-| Field            | Type                 | Description                     |
-| ---------------- | -------------------- | ------------------------------- |
-| `id`             | `number`             | ID của card                     |
-| `deckId`         | `number`             | ID của deck chứa card           |
-| `type`           | `string`             | `"Vocabulary"` hoặc `"Grammar"` |
-| `term`           | `string`             | Từ/cấu trúc ngữ pháp            |
-| `meaning`        | `string`             | Nghĩa                           |
-| `synonyms`       | `string?`            | Từ đồng nghĩa                   |
-| `imageMediaId`   | `number?`            | ID của ảnh đính kèm             |
-| `imageUrl`       | `string?`            | URL của ảnh                     |
-| `note`           | `string?`            | Ghi chú                         |
-| `grammarDetails` | `GrammarDetailsDTO?` | Chi tiết ngữ pháp               |
-| `examples`       | `CardExampleDTO[]`   | Danh sách ví dụ                 |
+| Field               | Type                    | Description                                 |
+| ------------------- | ----------------------- | ------------------------------------------- |
+| `id`                | `number`                | ID của card                                 |
+| `deckId`            | `number`                | ID của deck chứa card                       |
+| `type`              | `string`                | `"Vocabulary"` hoặc `"Grammar"`             |
+| `term`              | `string`                | Từ/cấu trúc ngữ pháp                        |
+| `meaning`           | `string`                | Nghĩa                                       |
+| `synonyms`          | `string?`               | Từ đồng nghĩa                               |
+| `imageMediaId`      | `number?`               | ID của ảnh đính kèm                         |
+| `imageUrl`          | `string?`               | URL của ảnh                                 |
+| `note`              | `string?`               | Ghi chú                                     |
+| `difficulty`        | `number`                | **[NEW]** Độ khó 1-5 do creator đánh giá    |
+| `priority`          | `number`                | **[NEW]** Thứ tự học trong deck (0 = mặc định) |
+| `tags`              | `string?`               | **[NEW]** Tags riêng cho card (comma-separated) |
+| `isHidden`          | `boolean`               | **[NEW]** Ẩn card khỏi learning queue       |
+| `audioMediaId`      | `number?`               | **[NEW]** Audio pronunciation cho term      |
+| `audioUrl`          | `string?`               | **[NEW]** URL của audio pronunciation       |
+| `hint`              | `string?`               | **[NEW]** Gợi ý khi user bí                 |
+| `grammarDetails`    | `GrammarDetailsDTO?`    | Chi tiết ngữ pháp (cho Grammar)             |
+| `vocabularyDetails` | `VocabularyDetailsDTO?` | **[NEW]** Chi tiết từ vựng (cho Vocabulary) |
+| `examples`          | `CardExampleDTO[]`      | Danh sách ví dụ                             |
 
 ### CardExampleDTO
 
@@ -108,7 +117,80 @@ Dùng khi xem chi tiết card - thông tin đầy đủ.
 | `usageNotes`     | `string?` | **[NEW]** Ghi chú cách dùng chi tiết           |
 | `register`       | `string?` | **[NEW]** Formal / Informal / Written / Spoken |
 
+### VocabularyDetailsDTO
+
+> **[NEW]** Chi tiết dành riêng cho Vocabulary cards.
+
+| Field              | Type      | Description                                        |
+| ------------------ | --------- | -------------------------------------------------- |
+| `reading`          | `string?` | Cách đọc hiragana/katakana (vd: たべる cho 食べる) |
+| `partOfSpeech`     | `string?` | Loại từ: Noun, Verb, い-Adj, な-Adj, Adverb, etc.  |
+| `pitch`            | `string?` | Pitch accent pattern                               |
+| `jlptLevel`        | `string?` | **[NEW]** JLPT Level (N5-N1)                       |
+| `frequency`        | `number?` | **[NEW]** Tần suất sử dụng (1 = phổ biến nhất)     |
+| `waniKaniLevel`    | `number?` | **[NEW]** Level WaniKani nếu có                    |
+| `transitivity`     | `string?` | **[NEW]** Transitive/Intransitive (cho động từ)   |
+| `verbGroup`        | `string?` | **[NEW]** Group 1/2/3, Ichidan/Godan               |
+| `adjectiveType`    | `string?` | **[NEW]** い-adj, な-adj                           |
+| `commonCollocations` | `string?` | **[NEW]** Các cụm từ hay đi kèm                  |
+| `antonyms`         | `string?` | **[NEW]** Từ trái nghĩa                            |
+| `kanjiComponents`  | `string?` | **[NEW]** Các kanji thành phần                     |
+
 ---
+
+## 🎯 Hướng dẫn tạo Card theo loại
+
+> [!IMPORTANT] > **Frontend cần hiểu rõ sự khác biệt giữa Vocabulary và Grammar cards để gửi đúng data.**
+
+### Vocabulary Card
+
+Dùng cho **từ vựng riêng lẻ** (食べる, 家, 大きい...)
+
+```json
+{
+  "type": "Vocabulary",
+  "term": "食べる",
+  "meaning": "Ăn",
+  "synonyms": "召し上がる",
+  "vocabularyDetails": {
+    "reading": "たべる",
+    "partOfSpeech": "Verb",
+    "pitch": "0"
+  },
+  "examples": [...]
+}
+```
+
+| Field               | Sử dụng                      |
+| ------------------- | ---------------------------- |
+| `synonyms`          | ✅ Dùng cho từ đồng nghĩa    |
+| `vocabularyDetails` | ✅ Dùng cho reading, loại từ |
+| `grammarDetails`    | ❌ Không dùng                |
+
+### Grammar Card
+
+Dùng cho **cấu trúc ngữ pháp** (〜たり〜たりする, 〜ことができる...)
+
+```json
+{
+  "type": "Grammar",
+  "term": "〜たり〜たりする",
+  "meaning": "Làm các việc như...",
+  "grammarDetails": {
+    "structure": "Vた + り + Vた + り + する",
+    "explanation": "Liệt kê các hành động đại diện",
+    "level": "N4",
+    "nuance": "Chỉ liệt kê một số, không phải tất cả"
+  },
+  "examples": [...]
+}
+```
+
+| Field               | Sử dụng                         |
+| ------------------- | ------------------------------- |
+| `synonyms`          | ❌ Thường không cần             |
+| `vocabularyDetails` | ❌ Không dùng                   |
+| `grammarDetails`    | ✅ Dùng cho structure, level... |
 
 ## Card CRUD
 
@@ -262,16 +344,40 @@ POST /decks/{deckId}/cards
 }
 ```
 
-| Field            | Type                    | Required | Description                      |
-| ---------------- | ----------------------- | -------- | -------------------------------- |
-| `type`           | `string`                | ❌       | Default: `"Vocabulary"`          |
-| `term`           | `string`                | ✅       | Từ vựng/cấu trúc                 |
-| `meaning`        | `string`                | ✅       | Nghĩa                            |
-| `synonyms`       | `string`                | ❌       | Từ đồng nghĩa                    |
-| `imageMediaId`   | `number`                | ❌       | ID ảnh (từ Media API)            |
-| `note`           | `string`                | ❌       | Ghi chú                          |
-| `grammarDetails` | `GrammarDetailsRequest` | ❌       | Chi tiết ngữ pháp (xem bên dưới) |
-| `examples`       | `CardExampleRequest[]`  | ❌       | Danh sách ví dụ                  |
+| Field               | Type                       | Required | Description                                 |
+| ------------------- | -------------------------- | -------- | ------------------------------------------- |
+| `type`              | `string`                   | ❌       | Default: `"Vocabulary"`                     |
+| `term`              | `string`                   | ✅       | Từ vựng/cấu trúc                            |
+| `meaning`           | `string`                   | ✅       | Nghĩa                                       |
+| `synonyms`          | `string`                   | ❌       | Từ đồng nghĩa                               |
+| `imageMediaId`      | `number`                   | ❌       | ID ảnh (từ Media API)                       |
+| `note`              | `string`                   | ❌       | Ghi chú                                     |
+| `difficulty`        | `number`                   | ❌       | **[NEW]** Độ khó 1-5 (default: 1)           |
+| `priority`          | `number`                   | ❌       | **[NEW]** Thứ tự học (default: 0)           |
+| `tags`              | `string`                   | ❌       | **[NEW]** Tags (comma-separated)            |
+| `isHidden`          | `boolean`                  | ❌       | **[NEW]** Ẩn khỏi learning queue            |
+| `audioMediaId`      | `number`                   | ❌       | **[NEW]** ID audio pronunciation            |
+| `hint`              | `string`                   | ❌       | **[NEW]** Gợi ý khi user bí                 |
+| `grammarDetails`    | `GrammarDetailsRequest`    | ❌       | Chi tiết ngữ pháp (cho Grammar)             |
+| `vocabularyDetails` | `VocabularyDetailsRequest` | ❌       | **[NEW]** Chi tiết từ vựng (cho Vocabulary) |
+| `examples`          | `CardExampleRequest[]`     | ❌       | Danh sách ví dụ                             |
+
+##### VocabularyDetailsRequest (NEW)
+
+| Field              | Type     | Required | Description                              |
+| ------------------ | -------- | -------- | ---------------------------------------- |
+| `reading`          | `string` | ❌       | Cách đọc hiragana                        |
+| `partOfSpeech`     | `string` | ❌       | Loại từ                                  |
+| `pitch`            | `string` | ❌       | Pitch accent                             |
+| `jlptLevel`        | `string` | ❌       | **[NEW]** JLPT Level (N5-N1)             |
+| `frequency`        | `number` | ❌       | **[NEW]** Tần suất sử dụng               |
+| `waniKaniLevel`    | `number` | ❌       | **[NEW]** Level WaniKani                 |
+| `transitivity`     | `string` | ❌       | **[NEW]** Transitive/Intransitive        |
+| `verbGroup`        | `string` | ❌       | **[NEW]** Group 1/2/3                    |
+| `adjectiveType`    | `string` | ❌       | **[NEW]** い-adj, な-adj                 |
+| `commonCollocations` | `string` | ❌     | **[NEW]** Các cụm từ hay đi kèm          |
+| `antonyms`         | `string` | ❌       | **[NEW]** Từ trái nghĩa                  |
+| `kanjiComponents`  | `string` | ❌       | **[NEW]** Các kanji thành phần           |
 
 ##### GrammarDetailsRequest
 
@@ -347,6 +453,17 @@ PUT /decks/{deckId}/cards/{id}
 
 > [!NOTE]
 > Chỉ gửi các field cần cập nhật, các field không gửi sẽ giữ nguyên giá trị cũ.
+
+> [!TIP] > **[NEW]** Để cập nhật VocabularyDetails cho Vocabulary card:
+>
+> ```json
+> {
+>   "vocabularyDetails": {
+>     "reading": "たべる",
+>     "partOfSpeech": "Verb"
+>   }
+> }
+> ```
 
 #### Response
 

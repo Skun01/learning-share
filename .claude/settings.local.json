@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build:*)",
+      "Bash(dotnet ef migrations add:*)",
+      "Bash(ls:*)",
+      "Bash(dotnet ef migrations list:*)",
+      "Bash(dotnet ef database update:*)",
+      "Bash(curl:*)",
+      "Bash(timeout 10 bash -c:*)",
+      "Bash(export TOKEN:*)",
+      "Bash(__NEW_LINE__ echo \"=== TEST AUTH APIs ===\")",
+      "Bash(__NEW_LINE__ echo \"2. Get Current User \\(GET /api/auth/me\\):\")",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI0IiwiZW1haWwiOiJ1bGF0cnVvbmczN0BnbWFpbC5jb20iLCJyb2xlIjoiTGVhcm5lciIsIm5iZiI6MTc2NzM1MDY4NCwiZXhwIjoxNzY3NDM3MDg0LCJpYXQiOjE3NjczNTA2ODQsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE1MCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE3MyJ9.tp222ktT5ZSHSM2ZgTop0MvYb8Vde6y58V0UvO7-qFA\":*)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI0IiwiZW1haWwiOiJ1bGF0cnVvbmczN0BnbWFpbC5jb20iLCJyb2xlIjoiTGVhcm5lciIsIm5iZiI6MTc2NzM2NDE3MCwiZXhwIjoxNzY3NDUwNTcwLCJpYXQiOjE3NjczNjQxNzAsImlzcyI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE1MCIsImF1ZCI6Imh0dHA6Ly9sb2NhbGhvc3Q6NTE3MyJ9.dOgtbwHiIKwmJnriS08aYcxdKbUZZPi5GdjoY7Q5kyw\":*)",
+      "Bash(__NEW_LINE__ echo \"========== DECK APIs ==========\")",
+      "Bash(__NEW_LINE__ echo \"2. GET /api/decks/9 \\(Deck Detail\\):\")",
+      "Bash(__NEW_LINE__ echo \"========== CARD APIs ==========\")",
+      "Bash(__NEW_LINE__ echo \"2. GET /api/decks/9/cards/1 \\(Card Detail\\):\")",
+      "Bash(__NEW_LINE__ echo \"3. POST /api/decks/9/cards \\(Create Card with VocabularyDetails\\):\")",
+      "Bash(__NEW_LINE__ curl -s -X POST \"http://localhost:5212/api/decks/9/cards\" )",
+      "Bash(__NEW_LINE__ echo \"4. PUT /api/decks/9/cards/9 \\(Update Card\\):\")",
+      "Bash(__NEW_LINE__ echo \"========== SRS/STUDY APIs ==========\")",
+      "Bash(__NEW_LINE__ echo \"3. GET /api/srs/reviews/available:\")",
+      "Bash(__NEW_LINE__ echo \"5. POST /api/srs/reviews/1/submit \\(Submit Review\\):\")",
+      "Bash(__NEW_LINE__ echo \"6. GET /api/srs/stats/heatmap:\")",
+      "Bash(__NEW_LINE__ echo \"========== STORE APIs ==========\")",
+      "Bash(__NEW_LINE__ echo \"========== EXAMPLE APIs ==========\")",
+      "Bash(__NEW_LINE__ echo \"1. POST /api/cards/9/examples \\(Add Example\\):\")",
+      "Bash(__NEW_LINE__ echo \"2. PUT /api/cards/9/examples/6 \\(Update Example\\):\")",
+      "Bash(__NEW_LINE__ echo \"========== BULK OPERATIONS ==========\")",
+      "Bash(__NEW_LINE__ echo \"2. PUT /api/decks/9/cards/bulk \\(Bulk Update\\):\")",
+      "Bash(__NEW_LINE__ echo \"========== CRAM MODE APIs ==========\")",
+      "Bash(__NEW_LINE__ echo \"2. POST /api/srs/cram/submit:\")",
+      "Bash(__NEW_LINE__ echo \"========== DELETE TESTS ==========\")",
+      "Bash(git add:*)"
+    ]
+  }
+}

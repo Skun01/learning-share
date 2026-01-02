@@ -41,6 +41,8 @@ public class UserCardProgressRepository : Repository<UserCardProgress>, IUserCar
             .Include(ucp => ucp.Card)
                 .ThenInclude(c => c.GrammarDetails)
             .Include(ucp => ucp.Card)
+                .ThenInclude(c => c.VocabularyDetails)
+            .Include(ucp => ucp.Card)
                 .ThenInclude(c => c.ImageMedia)
             .Where(ucp => ucp.UserId == userId 
                 && ucp.NextReviewDate != null 
@@ -184,6 +186,8 @@ public class UserCardProgressRepository : Repository<UserCardProgress>, IUserCar
                     .ThenInclude(e => e.AudioMedia)
             .Include(ucp => ucp.Card)
                 .ThenInclude(c => c.GrammarDetails)
+            .Include(ucp => ucp.Card)
+                .ThenInclude(c => c.VocabularyDetails)
             .Include(ucp => ucp.Card)
                 .ThenInclude(c => c.ImageMedia)
             .Where(ucp => ucp.UserId == userId);

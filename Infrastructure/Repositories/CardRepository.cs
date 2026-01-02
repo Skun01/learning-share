@@ -31,6 +31,7 @@ public class CardRepository : Repository<Card>, ICardRepository
             .Include(c => c.Examples)
                 .ThenInclude(e => e.AudioMedia)
             .Include(c => c.GrammarDetails)
+            .Include(c => c.VocabularyDetails)
             .Include(c => c.ImageMedia)
             .ToListAsync();
     }
@@ -42,6 +43,7 @@ public class CardRepository : Repository<Card>, ICardRepository
             .Include(c => c.Examples)
                 .ThenInclude(e => e.AudioMedia)
             .Include(c => c.GrammarDetails)
+            .Include(c => c.VocabularyDetails)
             .Include(c => c.ImageMedia)
             .AsNoTracking()
             .ToListAsync();
@@ -53,6 +55,7 @@ public class CardRepository : Repository<Card>, ICardRepository
             .Include(c => c.Examples)
                 .ThenInclude(e => e.AudioMedia)
             .Include(c => c.GrammarDetails)
+            .Include(c => c.VocabularyDetails)
             .Include(c => c.ImageMedia)
             .FirstOrDefaultAsync(c => c.Id == cardId);
     }
@@ -75,6 +78,7 @@ public class CardRepository : Repository<Card>, ICardRepository
             .Include(c => c.Examples)
                 .ThenInclude(e => e.AudioMedia)
             .Include(c => c.GrammarDetails)
+            .Include(c => c.VocabularyDetails)
             .Include(c => c.ImageMedia)
             .AsNoTracking()
             .Take(limit);

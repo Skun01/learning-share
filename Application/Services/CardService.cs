@@ -38,7 +38,8 @@ public class CardService : ICardService
             ImageMediaId = c.ImageMediaId,
             ImageUrl = c.ImageMedia != null ? "/" + c.ImageMedia.FilePath : null,
             HasExamples = c.Examples.Any(),
-            HasGrammarDetails = c.GrammarDetails != null
+            HasGrammarDetails = c.GrammarDetails != null,
+            HasVocabularyDetails = c.VocabularyDetails != null
         });
     }
 
@@ -87,7 +88,8 @@ public class CardService : ICardService
             ImageMediaId = c.ImageMediaId,
             ImageUrl = c.ImageMedia != null ? "/" + c.ImageMedia.FilePath : null,
             HasExamples = c.Examples.Any(),
-            HasGrammarDetails = c.GrammarDetails != null
+            HasGrammarDetails = c.GrammarDetails != null,
+            HasVocabularyDetails = c.VocabularyDetails != null
         });
     }
 
@@ -134,7 +136,14 @@ public class CardService : ICardService
             Meaning = request.Meaning,
             Synonyms = request.Synonyms,
             ImageMediaId = request.ImageMediaId,
-            Note = request.Note
+            Note = request.Note,
+            // === Thuộc tính mở rộng ===
+            Difficulty = request.Difficulty,
+            Priority = request.Priority,
+            Tags = request.Tags,
+            IsHidden = request.IsHidden,
+            AudioMediaId = request.AudioMediaId,
+            Hint = request.Hint
         };
 
         await _unitOfWork.Cards.AddAsync(card);
@@ -159,6 +168,35 @@ public class CardService : ICardService
                 Register = request.GrammarDetails.Register
             };
             await _unitOfWork.GrammarDetails.AddAsync(grammarDetails);
+        }
+
+        // Add vocabulary details if provided
+        if (request.VocabularyDetails != null && cardType == CardType.Vocabulary)
+        {
+            Level? jlptLevel = null;
+            if (!string.IsNullOrEmpty(request.VocabularyDetails.JLPTLevel) &&
+                Enum.TryParse<Level>(request.VocabularyDetails.JLPTLevel, true, out var parsedLevel))
+            {
+                jlptLevel = parsedLevel;
+            }
+
+            var vocabularyDetails = new VocabularyDetails
+            {
+                CardId = card.Id,
+                Reading = request.VocabularyDetails.Reading,
+                PartOfSpeech = request.VocabularyDetails.PartOfSpeech,
+                Pitch = request.VocabularyDetails.Pitch,
+                JLPTLevel = jlptLevel,
+                Frequency = request.VocabularyDetails.Frequency,
+                WaniKaniLevel = request.VocabularyDetails.WaniKaniLevel,
+                Transitivity = request.VocabularyDetails.Transitivity,
+                VerbGroup = request.VocabularyDetails.VerbGroup,
+                AdjectiveType = request.VocabularyDetails.AdjectiveType,
+                CommonCollocations = request.VocabularyDetails.CommonCollocations,
+                Antonyms = request.VocabularyDetails.Antonyms,
+                KanjiComponents = request.VocabularyDetails.KanjiComponents
+            };
+            await _unitOfWork.VocabularyDetails.AddAsync(vocabularyDetails);
         }
 
         // Add examples if provided
@@ -216,11 +254,128 @@ public class CardService : ICardService
             card.ImageMediaId = request.ImageMediaId;
         if (request.Note != null)
             card.Note = request.Note;
+        // === Thuộc tính mở rộng ===
+        if (request.Difficulty.HasValue)
+            card.Difficulty = request.Difficulty.Value;
+        if (request.Priority.HasValue)
+            card.Priority = request.Priority.Value;
+        if (request.Tags != null)
+            card.Tags = request.Tags;
+        if (request.IsHidden.HasValue)
+            card.IsHidden = request.IsHidden.Value;
+        if (request.AudioMediaId.HasValue)
+            card.AudioMediaId = request.AudioMediaId;
+        if (request.Hint != null)
+            card.Hint = request.Hint;
+
+        // Handle GrammarDetails update
+        if (request.GrammarDetails != null && card.Type == CardType.Grammar)
+        {
+            if (card.GrammarDetails == null)
+            {
+                var newGrammar = new GrammarDetails
+                {
+                    CardId = cardId,
+                    Structure = request.GrammarDetails.Structure,
+                    Explanation = request.GrammarDetails.Explanation,
+                    Caution = request.GrammarDetails.Caution,
+                    Level = Enum.TryParse<Level>(request.GrammarDetails.Level, true, out var level) ? level : Level.N5,
+                    FormationRules = request.GrammarDetails.FormationRules,
+                    Nuance = request.GrammarDetails.Nuance,
+                    UsageNotes = request.GrammarDetails.UsageNotes,
+                    Register = request.GrammarDetails.Register
+                };
+                await _unitOfWork.GrammarDetails.AddAsync(newGrammar);
+            }
+            else
+            {
+                if (request.GrammarDetails.Structure != null)
+                    card.GrammarDetails.Structure = request.GrammarDetails.Structure;
+                if (request.GrammarDetails.Explanation != null)
+                    card.GrammarDetails.Explanation = request.GrammarDetails.Explanation;
+                if (request.GrammarDetails.Caution != null)
+                    card.GrammarDetails.Caution = request.GrammarDetails.Caution;
+                if (request.GrammarDetails.Level != null && Enum.TryParse<Level>(request.GrammarDetails.Level, true, out var level))
+                    card.GrammarDetails.Level = level;
+                if (request.GrammarDetails.FormationRules != null)
+                    card.GrammarDetails.FormationRules = request.GrammarDetails.FormationRules;
+                if (request.GrammarDetails.Nuance != null)
+                    card.GrammarDetails.Nuance = request.GrammarDetails.Nuance;
+                if (request.GrammarDetails.UsageNotes != null)
+                    card.GrammarDetails.UsageNotes = request.GrammarDetails.UsageNotes;
+                if (request.GrammarDetails.Register != null)
+                    card.GrammarDetails.Register = request.GrammarDetails.Register;
+                _unitOfWork.GrammarDetails.UpdateAsync(card.GrammarDetails);
+            }
+        }
+
+        // Handle VocabularyDetails update
+        if (request.VocabularyDetails != null && card.Type == CardType.Vocabulary)
+        {
+            if (card.VocabularyDetails == null)
+            {
+                Level? jlptLevel = null;
+                if (!string.IsNullOrEmpty(request.VocabularyDetails.JLPTLevel) &&
+                    Enum.TryParse<Level>(request.VocabularyDetails.JLPTLevel, true, out var parsedLevel))
+                {
+                    jlptLevel = parsedLevel;
+                }
+
+                var newVocabDetails = new VocabularyDetails
+                {
+                    CardId = cardId,
+                    Reading = request.VocabularyDetails.Reading,
+                    PartOfSpeech = request.VocabularyDetails.PartOfSpeech,
+                    Pitch = request.VocabularyDetails.Pitch,
+                    JLPTLevel = jlptLevel,
+                    Frequency = request.VocabularyDetails.Frequency,
+                    WaniKaniLevel = request.VocabularyDetails.WaniKaniLevel,
+                    Transitivity = request.VocabularyDetails.Transitivity,
+                    VerbGroup = request.VocabularyDetails.VerbGroup,
+                    AdjectiveType = request.VocabularyDetails.AdjectiveType,
+                    CommonCollocations = request.VocabularyDetails.CommonCollocations,
+                    Antonyms = request.VocabularyDetails.Antonyms,
+                    KanjiComponents = request.VocabularyDetails.KanjiComponents
+                };
+                await _unitOfWork.VocabularyDetails.AddAsync(newVocabDetails);
+            }
+            else
+            {
+                if (request.VocabularyDetails.Reading != null)
+                    card.VocabularyDetails.Reading = request.VocabularyDetails.Reading;
+                if (request.VocabularyDetails.PartOfSpeech != null)
+                    card.VocabularyDetails.PartOfSpeech = request.VocabularyDetails.PartOfSpeech;
+                if (request.VocabularyDetails.Pitch != null)
+                    card.VocabularyDetails.Pitch = request.VocabularyDetails.Pitch;
+                if (request.VocabularyDetails.JLPTLevel != null &&
+                    Enum.TryParse<Level>(request.VocabularyDetails.JLPTLevel, true, out var level))
+                    card.VocabularyDetails.JLPTLevel = level;
+                if (request.VocabularyDetails.Frequency.HasValue)
+                    card.VocabularyDetails.Frequency = request.VocabularyDetails.Frequency;
+                if (request.VocabularyDetails.WaniKaniLevel.HasValue)
+                    card.VocabularyDetails.WaniKaniLevel = request.VocabularyDetails.WaniKaniLevel;
+                if (request.VocabularyDetails.Transitivity != null)
+                    card.VocabularyDetails.Transitivity = request.VocabularyDetails.Transitivity;
+                if (request.VocabularyDetails.VerbGroup != null)
+                    card.VocabularyDetails.VerbGroup = request.VocabularyDetails.VerbGroup;
+                if (request.VocabularyDetails.AdjectiveType != null)
+                    card.VocabularyDetails.AdjectiveType = request.VocabularyDetails.AdjectiveType;
+                if (request.VocabularyDetails.CommonCollocations != null)
+                    card.VocabularyDetails.CommonCollocations = request.VocabularyDetails.CommonCollocations;
+                if (request.VocabularyDetails.Antonyms != null)
+                    card.VocabularyDetails.Antonyms = request.VocabularyDetails.Antonyms;
+                if (request.VocabularyDetails.KanjiComponents != null)
+                    card.VocabularyDetails.KanjiComponents = request.VocabularyDetails.KanjiComponents;
+                _unitOfWork.VocabularyDetails.UpdateAsync(card.VocabularyDetails);
+            }
+        }
 
         _unitOfWork.Cards.UpdateAsync(card);
         await _unitOfWork.SaveChangesAsync();
 
-        return MapToDetailDTO(card);
+        // Reload card with details
+        var updatedCard = await _unitOfWork.Cards.GetByIdWithDetailsAsync(cardId);
+        return MapToDetailDTO(updatedCard!);
     }
 
     public async Task<bool> DeleteCardAsync(int userId, int deckId, int cardId)
@@ -250,6 +405,11 @@ public class CardService : ICardService
             _unitOfWork.GrammarDetails.DeleteAsync(card.GrammarDetails);
         }
 
+        if (card.VocabularyDetails != null)
+        {
+            _unitOfWork.VocabularyDetails.DeleteAsync(card.VocabularyDetails);
+        }
+
         // Delete card
         _unitOfWork.Cards.DeleteAsync(card);
 
@@ -274,6 +434,14 @@ public class CardService : ICardService
             ImageMediaId = card.ImageMediaId,
             ImageUrl = card.ImageMedia != null ? "/" + card.ImageMedia.FilePath : null,
             Note = card.Note,
+            // === Thuộc tính mở rộng ===
+            Difficulty = card.Difficulty,
+            Priority = card.Priority,
+            Tags = card.Tags,
+            IsHidden = card.IsHidden,
+            AudioMediaId = card.AudioMediaId,
+            AudioUrl = card.AudioMedia != null ? "/" + card.AudioMedia.FilePath : null,
+            Hint = card.Hint,
             GrammarDetails = card.GrammarDetails != null ? new GrammarDetailsDTO
             {
                 Structure = card.GrammarDetails.Structure,
@@ -284,6 +452,21 @@ public class CardService : ICardService
                 Nuance = card.GrammarDetails.Nuance,
                 UsageNotes = card.GrammarDetails.UsageNotes,
                 Register = card.GrammarDetails.Register
+            } : null,
+            VocabularyDetails = card.VocabularyDetails != null ? new VocabularyDetailsDTO
+            {
+                Reading = card.VocabularyDetails.Reading,
+                PartOfSpeech = card.VocabularyDetails.PartOfSpeech,
+                Pitch = card.VocabularyDetails.Pitch,
+                JLPTLevel = card.VocabularyDetails.JLPTLevel?.ToString(),
+                Frequency = card.VocabularyDetails.Frequency,
+                WaniKaniLevel = card.VocabularyDetails.WaniKaniLevel,
+                Transitivity = card.VocabularyDetails.Transitivity,
+                VerbGroup = card.VocabularyDetails.VerbGroup,
+                AdjectiveType = card.VocabularyDetails.AdjectiveType,
+                CommonCollocations = card.VocabularyDetails.CommonCollocations,
+                Antonyms = card.VocabularyDetails.Antonyms,
+                KanjiComponents = card.VocabularyDetails.KanjiComponents
             } : null,
             Examples = card.Examples.Select(e => new CardExampleDTO
             {
@@ -344,7 +527,14 @@ public class CardService : ICardService
                 Meaning = cardRequest.Meaning,
                 Synonyms = cardRequest.Synonyms,
                 ImageMediaId = cardRequest.ImageMediaId,
-                Note = cardRequest.Note
+                Note = cardRequest.Note,
+                // === Thuộc tính mở rộng ===
+                Difficulty = cardRequest.Difficulty,
+                Priority = cardRequest.Priority,
+                Tags = cardRequest.Tags,
+                IsHidden = cardRequest.IsHidden,
+                AudioMediaId = cardRequest.AudioMediaId,
+                Hint = cardRequest.Hint
             };
 
             await _unitOfWork.Cards.AddAsync(card);
@@ -369,6 +559,35 @@ public class CardService : ICardService
                     Register = cardRequest.GrammarDetails.Register
                 };
                 await _unitOfWork.GrammarDetails.AddAsync(grammarDetails);
+            }
+
+            // Add vocabulary details if provided
+            if (cardRequest.VocabularyDetails != null && cardType == CardType.Vocabulary)
+            {
+                Level? jlptLevel = null;
+                if (!string.IsNullOrEmpty(cardRequest.VocabularyDetails.JLPTLevel) &&
+                    Enum.TryParse<Level>(cardRequest.VocabularyDetails.JLPTLevel, true, out var parsedLevel))
+                {
+                    jlptLevel = parsedLevel;
+                }
+
+                var vocabularyDetails = new VocabularyDetails
+                {
+                    CardId = card.Id,
+                    Reading = cardRequest.VocabularyDetails.Reading,
+                    PartOfSpeech = cardRequest.VocabularyDetails.PartOfSpeech,
+                    Pitch = cardRequest.VocabularyDetails.Pitch,
+                    JLPTLevel = jlptLevel,
+                    Frequency = cardRequest.VocabularyDetails.Frequency,
+                    WaniKaniLevel = cardRequest.VocabularyDetails.WaniKaniLevel,
+                    Transitivity = cardRequest.VocabularyDetails.Transitivity,
+                    VerbGroup = cardRequest.VocabularyDetails.VerbGroup,
+                    AdjectiveType = cardRequest.VocabularyDetails.AdjectiveType,
+                    CommonCollocations = cardRequest.VocabularyDetails.CommonCollocations,
+                    Antonyms = cardRequest.VocabularyDetails.Antonyms,
+                    KanjiComponents = cardRequest.VocabularyDetails.KanjiComponents
+                };
+                await _unitOfWork.VocabularyDetails.AddAsync(vocabularyDetails);
             }
 
             // Add examples if provided
@@ -442,6 +661,11 @@ public class CardService : ICardService
             if (card.GrammarDetails != null)
             {
                 _unitOfWork.GrammarDetails.DeleteAsync(card.GrammarDetails);
+            }
+
+            if (card.VocabularyDetails != null)
+            {
+                _unitOfWork.VocabularyDetails.DeleteAsync(card.VocabularyDetails);
             }
 
             _unitOfWork.Cards.DeleteAsync(card);

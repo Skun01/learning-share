@@ -11,6 +11,17 @@ public class CardDetailDTO
     public int? ImageMediaId { get; set; }
     public string? ImageUrl { get; set; }
     public string? Note { get; set; }
+
+    // === Thuộc tính mở rộng ===
+    public int Difficulty { get; set; }
+    public int Priority { get; set; }
+    public string? Tags { get; set; }
+    public bool IsHidden { get; set; }
+    public int? AudioMediaId { get; set; }
+    public string? AudioUrl { get; set; }
+    public string? Hint { get; set; }
+
     public GrammarDetailsDTO? GrammarDetails { get; set; }
+    public VocabularyDetailsDTO? VocabularyDetails { get; set; }
     public List<CardExampleDTO> Examples { get; set; } = new();
 }

@@ -18,12 +18,31 @@ public class UserCardProgressConfiguration : IEntityTypeConfiguration<UserCardPr
         builder.Property(x => x.SRSLevel)
             .HasDefaultValue(SRSLevel.New)
             .HasConversion<int>();
-        
+
         builder.Property(x => x.GhostLevel)
             .HasDefaultValue(0);
 
         builder.Property(x => x.Streak)
             .HasDefaultValue(0);
+
+        // === Cấu hình các thuộc tính mới ===
+        builder.Property(x => x.EaseFactor)
+            .HasDefaultValue(2.5f);
+
+        builder.Property(x => x.TotalReviews)
+            .HasDefaultValue(0);
+
+        builder.Property(x => x.CorrectCount)
+            .HasDefaultValue(0);
+
+        builder.Property(x => x.IncorrectCount)
+            .HasDefaultValue(0);
+
+        builder.Property(x => x.LapseCount)
+            .HasDefaultValue(0);
+
+        builder.Property(x => x.IsSuspended)
+            .HasDefaultValue(false);
 
         builder.HasOne(x => x.User)
             .WithMany(u => u.Progresses)

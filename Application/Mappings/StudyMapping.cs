@@ -6,7 +6,9 @@ namespace Application.Mappings;
 
 public static class StudyMapping
 {
-    public static StudyCardDTO ToStudyCardDTO(this UserCardProgress progress)
+    private const int DefaultLeechThreshold = 8; // Ngưỡng mặc định để coi là leech
+
+    public static StudyCardDTO ToStudyCardDTO(this UserCardProgress progress, int leechThreshold = DefaultLeechThreshold)
     {
         var card = progress.Card;
         return new StudyCardDTO
@@ -25,12 +27,40 @@ public static class StudyMapping
             GhostLevel = progress.GhostLevel,
             Streak = progress.Streak,
             LastReviewedDate = progress.LastReviewedDate,
+            // === Thuộc tính mở rộng ===
+            EaseFactor = progress.EaseFactor,
+            TotalReviews = progress.TotalReviews,
+            CorrectCount = progress.CorrectCount,
+            IncorrectCount = progress.IncorrectCount,
+            LapseCount = progress.LapseCount,
+            FirstLearnedDate = progress.FirstLearnedDate,
+            IsSuspended = progress.IsSuspended,
+            IsLeech = progress.LapseCount >= leechThreshold,
             GrammarDetails = card.GrammarDetails != null ? new GrammarDetailsDTO
             {
                 Structure = card.GrammarDetails.Structure,
                 Explanation = card.GrammarDetails.Explanation,
                 Caution = card.GrammarDetails.Caution,
-                Level = card.GrammarDetails.Level.ToString()
+                Level = card.GrammarDetails.Level.ToString(),
+                FormationRules = card.GrammarDetails.FormationRules,
+                Nuance = card.GrammarDetails.Nuance,
+                UsageNotes = card.GrammarDetails.UsageNotes,
+                Register = card.GrammarDetails.Register
+            } : null,
+            VocabularyDetails = card.VocabularyDetails != null ? new VocabularyDetailsDTO
+            {
+                Reading = card.VocabularyDetails.Reading,
+                PartOfSpeech = card.VocabularyDetails.PartOfSpeech,
+                Pitch = card.VocabularyDetails.Pitch,
+                JLPTLevel = card.VocabularyDetails.JLPTLevel?.ToString(),
+                Frequency = card.VocabularyDetails.Frequency,
+                WaniKaniLevel = card.VocabularyDetails.WaniKaniLevel,
+                Transitivity = card.VocabularyDetails.Transitivity,
+                VerbGroup = card.VocabularyDetails.VerbGroup,
+                AdjectiveType = card.VocabularyDetails.AdjectiveType,
+                CommonCollocations = card.VocabularyDetails.CommonCollocations,
+                Antonyms = card.VocabularyDetails.Antonyms,
+                KanjiComponents = card.VocabularyDetails.KanjiComponents
             } : null,
             Examples = card.Examples.Select(e => new CardExampleDTO
             {
@@ -63,12 +93,40 @@ public static class StudyMapping
             GhostLevel = 0,
             Streak = 0,
             LastReviewedDate = null,
+            // === Thuộc tính mở rộng (mặc định cho card mới) ===
+            EaseFactor = 2.5f,
+            TotalReviews = 0,
+            CorrectCount = 0,
+            IncorrectCount = 0,
+            LapseCount = 0,
+            FirstLearnedDate = null,
+            IsSuspended = false,
+            IsLeech = false,
             GrammarDetails = card.GrammarDetails != null ? new GrammarDetailsDTO
             {
                 Structure = card.GrammarDetails.Structure,
                 Explanation = card.GrammarDetails.Explanation,
                 Caution = card.GrammarDetails.Caution,
-                Level = card.GrammarDetails.Level.ToString()
+                Level = card.GrammarDetails.Level.ToString(),
+                FormationRules = card.GrammarDetails.FormationRules,
+                Nuance = card.GrammarDetails.Nuance,
+                UsageNotes = card.GrammarDetails.UsageNotes,
+                Register = card.GrammarDetails.Register
+            } : null,
+            VocabularyDetails = card.VocabularyDetails != null ? new VocabularyDetailsDTO
+            {
+                Reading = card.VocabularyDetails.Reading,
+                PartOfSpeech = card.VocabularyDetails.PartOfSpeech,
+                Pitch = card.VocabularyDetails.Pitch,
+                JLPTLevel = card.VocabularyDetails.JLPTLevel?.ToString(),
+                Frequency = card.VocabularyDetails.Frequency,
+                WaniKaniLevel = card.VocabularyDetails.WaniKaniLevel,
+                Transitivity = card.VocabularyDetails.Transitivity,
+                VerbGroup = card.VocabularyDetails.VerbGroup,
+                AdjectiveType = card.VocabularyDetails.AdjectiveType,
+                CommonCollocations = card.VocabularyDetails.CommonCollocations,
+                Antonyms = card.VocabularyDetails.Antonyms,
+                KanjiComponents = card.VocabularyDetails.KanjiComponents
             } : null,
             Examples = card.Examples.Select(e => new CardExampleDTO
             {

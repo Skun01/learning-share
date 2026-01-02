@@ -14,6 +14,7 @@ public class UnitOfWork : IUnitOfWork
     public ICardRepository Cards { get; private set;}
     public ICardExampleRepository CardExamples { get; private set; }
     public IGrammarDetailsRepository GrammarDetails { get; private set; }
+    public IVocabularyDetailsRepository VocabularyDetails { get; private set; }
     public IRepository<MediaFile> MediaFiles { get; private set; }
     public IStudyLogRepository StudyLogs { get; private set; }
     public IRefreshTokenRepository RefreshTokens { get; private set; }
@@ -30,6 +31,7 @@ public class UnitOfWork : IUnitOfWork
         Cards = new CardRepository(_context);
         CardExamples = new CardExampleRepository(_context);
         GrammarDetails = new GrammarDetailsRepository(_context);
+        VocabularyDetails = new VocabularyDetailsRepository(_context);
         MediaFiles = new Repository<MediaFile>(_context);
         StudyLogs = new StudyLogRepository(_context);
         RefreshTokens = new RefreshTokenRepository(_context);
