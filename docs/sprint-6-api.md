@@ -1,6 +1,6 @@
 # Sprint 6: Community Store - API Documentation
 
-> **Base URL**: `http://localhost:5000/api`
+> **Base URL**: `http://localhost:5212/api`
 >
 > **Authentication**: Các endpoints đánh dấu 🔒 yêu cầu `Authorization: Bearer <access_token>`
 
@@ -205,7 +205,7 @@ Trả về array `PublicDeckDetailDTO[]` sắp xếp theo lượt download gần
 > **Khi nào dùng**: Hiển thị tag cloud hoặc filter options
 
 ```
-GET /store/tags/popular
+GET /store/tags
 ```
 
 #### Query Parameters

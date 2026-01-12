@@ -315,3 +315,347 @@ Query parameters:
 | Card | `Card_Not_Found_404` | Card không tồn tại |
 | SRS | `No_Cards_Available_400` | Không có cards để học |
 | Store | `Store_Already_Cloned_400` | Đã clone deck này rồi |
+
+---
+
+## TypeScript Interfaces (Copy-Paste Ready)
+
+> Frontend có thể copy các interfaces này để sử dụng trực tiếp.
+
+### API Response Wrapper
+
+```typescript
+// Wrapper chung cho tất cả API responses
+interface ApiResponse<T> {
+  code: number;
+  success: boolean;
+  message?: string;
+  data: T;
+  metaData?: MetaData;
+}
+
+interface MetaData {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPage: number;
+}
+```
+
+### Authentication
+
+```typescript
+interface AuthDTO {
+  accessToken: string;
+  refreshToken: string;
+  user: UserDTO;
+}
+
+interface UserDTO {
+  id: number;
+  username: string;
+  email: string;
+  role: 'Admin' | 'Learner';
+  avatarUrl?: string;
+}
+
+interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+interface RegisterRequest {
+  username: string;
+  email: string;
+  password: string;
+}
+```
+
+### Deck
+
+```typescript
+interface DeckSummaryDTO {
+  id: number;
+  name: string;
+  description?: string;
+  type: 'Vocabulary' | 'Grammar';
+  author: AuthorDTO;
+  stats: DeckStatsDTO;
+  tags: string[];
+  isPublic: boolean;
+  sourceDeckId?: number;
+  createdAt: string;
+}
+
+interface DeckDetailDTO {
+  id: number;
+  name: string;
+  description?: string;
+  type: 'Vocabulary' | 'Grammar';
+  isPublic: boolean;
+  parentDeckId?: number;
+  tags: string[];
+  totalCards: number;
+  downloads: number;
+  createdAt: string;
+}
+
+interface DeckStatsDTO {
+  totalCards: number;
+  downloads: number;
+  learned: number;
+  progress: number;
+  cardsDue: number;
+}
+
+interface AuthorDTO {
+  id: number;
+  name: string;
+  avatarUrl?: string;
+}
+```
+
+### Card
+
+```typescript
+interface CardSummaryDTO {
+  id: number;
+  type: 'Vocabulary' | 'Grammar';
+  term: string;
+  meaning: string;
+  imageMediaId?: number;
+  imageUrl?: string;
+  hasExamples: boolean;
+  hasGrammarDetails: boolean;
+  hasVocabularyDetails: boolean;
+}
+
+interface CardDetailDTO {
+  id: number;
+  deckId: number;
+  type: 'Vocabulary' | 'Grammar';
+  term: string;
+  meaning: string;
+  synonyms?: string;
+  imageMediaId?: number;
+  imageUrl?: string;
+  note?: string;
+  difficulty: number;
+  priority: number;
+  tags?: string;
+  isHidden: boolean;
+  audioMediaId?: number;
+  audioUrl?: string;
+  hint?: string;
+  grammarDetails?: GrammarDetailsDTO;
+  vocabularyDetails?: VocabularyDetailsDTO;
+  examples: CardExampleDTO[];
+}
+
+interface VocabularyDetailsDTO {
+  reading?: string;
+  partOfSpeech?: string;
+  pitch?: string;
+  jlptLevel?: string;
+  frequency?: number;
+  waniKaniLevel?: number;
+  transitivity?: string;
+  verbGroup?: string;
+  adjectiveType?: string;
+  commonCollocations?: string;
+  antonyms?: string;
+  kanjiComponents?: string;
+}
+
+interface GrammarDetailsDTO {
+  structure?: string;
+  explanation?: string;
+  caution?: string;
+  level: string;
+  formationRules?: string;
+  nuance?: string;
+  usageNotes?: string;
+  register?: string;
+}
+
+interface CardExampleDTO {
+  id: number;
+  sentenceJapanese: string;
+  sentenceMeaning: string;
+  clozePart?: string;
+  alternativeAnswers?: string;
+  audioMediaId?: number;
+  audioUrl?: string;
+}
+```
+
+### Study/SRS
+
+```typescript
+interface StudyCountDTO {
+  reviews: number;
+  new: number;
+  ghosts: number;
+}
+
+interface StudyCardDTO {
+  cardId: number;
+  deckId: number;
+  deckName: string;
+  type: 'Vocabulary' | 'Grammar';
+  term: string;
+  meaning: string;
+  synonyms?: string;
+  imageMediaId?: number;
+  imageUrl?: string;
+  note?: string;
+  srsLevel: number;
+  ghostLevel: number;
+  streak: number;
+  lastReviewedDate?: string;
+  easeFactor: number;
+  totalReviews: number;
+  correctCount: number;
+  incorrectCount: number;
+  lapseCount: number;
+  firstLearnedDate?: string;
+  isSuspended: boolean;
+  isLeech: boolean;
+  grammarDetails?: GrammarDetailsDTO;
+  vocabularyDetails?: VocabularyDetailsDTO;
+  examples: CardExampleDTO[];
+}
+
+interface SessionDTO {
+  sessionId: string;
+  mode: 'review' | 'lesson' | 'mixed';
+  totalCards: number;
+  currentIndex: number;
+  correct: number;
+  incorrect: number;
+  startedAt: string;
+  currentCard?: StudyCardDTO;
+  queue: number[];
+}
+
+interface CramSessionDTO {
+  sessionId: string;
+  type: 'All' | 'Due' | 'Failed' | 'New';
+  totalCards: number;
+  currentIndex: number;
+  correct: number;
+  incorrect: number;
+  startedAt: string;
+  currentCard?: StudyCardDTO;
+  queue: number[];
+}
+
+interface SessionSummaryDTO {
+  sessionId: string;
+  totalReviewed: number;
+  correct: number;
+  incorrect: number;
+  accuracyRate: number;
+  timeSpentSeconds: number;
+  startedAt: string;
+  endedAt: string;
+}
+
+interface SubmitReviewRequest {
+  isCorrect: boolean;
+  timeSpentMs?: number;
+  userAnswer?: string;
+  exampleId?: number;
+  sessionId?: string;
+  reviewType?: 'Learn' | 'Review' | 'Cram' | 'Ghost';
+}
+
+interface SubmitReviewResponse {
+  cardId: number;
+  oldLevel: number;
+  newLevel: number;
+  nextReviewDate: string;
+  ghostLevel: number;
+  streak: number;
+  isCorrect: boolean;
+  message: string;
+  easeFactor: number;
+  totalReviews: number;
+  correctCount: number;
+  incorrectCount: number;
+  lapseCount: number;
+  isLeech: boolean;
+}
+```
+
+### Statistics
+
+```typescript
+interface HeatmapDataDTO {
+  date: string;
+  count: number;
+}
+
+interface ForecastDTO {
+  date: string;
+  count: number;
+}
+
+interface AccuracyDTO {
+  correct: number;
+  incorrect: number;
+  total: number;
+  rate: number;
+}
+
+interface LevelDistributionDTO {
+  distribution: Record<number, number>;
+  totalCards: number;
+  learnedCards: number;
+  burnedCards: number;
+}
+```
+
+---
+
+## API Testing with cURL
+
+### Login Example
+
+```bash
+curl -X POST "http://localhost:5212/api/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "password": "password123"}'
+```
+
+### Authenticated Request Example
+
+```bash
+TOKEN="your_access_token_here"
+
+curl -X GET "http://localhost:5212/api/decks" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### Create Vocabulary Card Example
+
+```bash
+curl -X POST "http://localhost:5212/api/decks/1/cards" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "Vocabulary",
+    "term": "食べる",
+    "meaning": "Ăn",
+    "vocabularyDetails": {
+      "reading": "たべる",
+      "partOfSpeech": "Verb",
+      "verbGroup": "Group 2"
+    },
+    "examples": [{
+      "sentenceJapanese": "私はりんごを食べる",
+      "sentenceMeaning": "Tôi ăn táo",
+      "clozePart": "食べる"
+    }]
+  }'
+```

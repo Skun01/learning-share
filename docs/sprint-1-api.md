@@ -1,6 +1,6 @@
 # Sprint 1: Authentication & User Management - API Documentation
 
-> **Base URL**: `http://localhost:5000/api`
+> **Base URL**: `http://localhost:5212/api`
 >
 > **Authentication**: Các endpoint có đánh dấu 🔒 yêu cầu gửi header `Authorization: Bearer <access_token>`
 

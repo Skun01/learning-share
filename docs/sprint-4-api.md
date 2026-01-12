@@ -1,6 +1,6 @@
 # Sprint 4: Study/SRS System - API Documentation
 
-> **Base URL**: `http://localhost:5000/api`
+> **Base URL**: `http://localhost:5212/api`
 >
 > **Authentication**: Tất cả endpoints trong Sprint này đều yêu cầu 🔒 `Authorization: Bearer <access_token>`
 
@@ -133,6 +133,22 @@ Tổng kết sau khi kết thúc phiên học.
 | `timeSpentSeconds` | `number` | Thời gian học (giây) |
 | `startedAt`        | `string` | Thời gian bắt đầu    |
 | `endedAt`          | `string` | Thời gian kết thúc   |
+
+### CramSessionDTO
+
+Thông tin phiên Cram (luyện tập không ảnh hưởng SRS).
+
+| Field          | Type            | Description                                |
+| -------------- | --------------- | ------------------------------------------ |
+| `sessionId`    | `string`        | ID của cram session (UUID)                 |
+| `type`         | `string`        | `"All"`, `"Due"`, `"Failed"`, `"New"`      |
+| `totalCards`   | `number`        | Tổng số cards trong session                |
+| `currentIndex` | `number`        | Index cards hiện tại (0-based)             |
+| `correct`      | `number`        | Số câu đúng                                |
+| `incorrect`    | `number`        | Số câu sai                                 |
+| `startedAt`    | `string`        | Thời gian bắt đầu                          |
+| `currentCard`  | `StudyCardDTO?` | Card hiện tại để học                       |
+| `queue`        | `number[]`      | Danh sách cardIds còn lại                  |
 
 ### SubmitReviewRequest
 
@@ -574,6 +590,8 @@ POST /srs/cram/start
 
 #### Response
 
+Trả về `CramSessionDTO` - xem [CramSessionDTO](#cramsessiondto) trong phần Schemas.
+
 ```json
 {
   "code": 200,
@@ -614,7 +632,10 @@ POST /srs/cram/submit
 
 #### Response
 
-Trả về session state với card tiếp theo.
+Trả về `CramSessionDTO` với card tiếp theo.
+
+> [!NOTE]
+> Response schema: [CramSessionDTO](#cramsessiondto) - xem phần Schemas
 
 ### Notes
 

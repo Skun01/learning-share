@@ -1,6 +1,6 @@
 # Sprint 3: Card Management - API Documentation
 
-> **Base URL**: `http://localhost:5000/api`
+> **Base URL**: `http://localhost:5212/api`
 >
 > **Authentication**: Tất cả endpoints trong Sprint này đều yêu cầu 🔒 `Authorization: Bearer <access_token>`
 
